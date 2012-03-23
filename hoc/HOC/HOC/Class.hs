@@ -1,6 +1,7 @@
 {-# LANGUAGE ForeignFunctionInterface, EmptyDataDecls,
              MultiParamTypeClasses, FunctionalDependencies,
-             TypeSynonymInstances, FlexibleContexts #-}
+             TypeSynonymInstances, FlexibleContexts,
+             FlexibleInstances #-}
 module HOC.Class where
 
 import HOC.Base

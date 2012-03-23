@@ -1,9 +1,11 @@
 {-# LANGUAGE ForeignFunctionInterface, EmptyDataDecls, GeneralizedNewtypeDeriving #-}
 module HOC.Base where
 
-import Foreign
-import Foreign.C.String
 import Control.Exception(bracket)
+import Foreign.C.String (CString, withCString)
+import Foreign.Ptr (Ptr, FunPtr)
+import Foreign.Storable (Storable)
+import System.IO.Unsafe (unsafePerformIO)
 
 -- The SEL Type
 

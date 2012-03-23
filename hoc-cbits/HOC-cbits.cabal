@@ -1,0 +1,45 @@
+name: HOC-cbits
+version: 1.0
+license: BSD4
+license-file: LICENSE
+cabal-version: >= 1.2
+build-type: Custom
+
+Flag ObjC2
+    description: build for Objective-C 2.0
+
+Library
+    build-depends: base >= 3 && < 5
+    hs-source-dirs: src
+    exposed-modules: HOC.Base
+    
+    c-sources: cbits/Class.m
+               cbits/Exceptions.m
+               cbits/FFICallInterface.m
+               cbits/GetNewHaskellData.m
+               cbits/Invocation.m
+               cbits/Ivars.m
+               cbits/Marshalling.m
+               cbits/MemoryManagement.m
+               cbits/Methods.m
+               cbits/NewClass.m
+               cbits/ObjectMap.m
+               cbits/RetainedHaskellPart.m
+               cbits/Selector.m
+               cbits/Statistics.m
+                
+    extra-libraries: objc, ffi
+    
+    if os(darwin)
+        include-dirs: /usr/include/ffi
+        frameworks: Foundation
+        cpp-options: -DMACOSX
+    else
+        -- paths are inserted by Setup.hs
+        extra-libraries: gnustep-base
+        cpp-options: -DGNUSTEP
+        cc-options: -fobjc-exceptions
+                    -D_NATIVE_OBJC_EXCEPTIONS=1
+    
+    if flag(ObjC2)
+        cpp-options: -D__OBJC2__=1

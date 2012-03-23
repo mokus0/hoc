@@ -7,7 +7,7 @@ import HOC.Invocation
 import HOC.Dyld
 import HOC.NameCaseChange
 
-import Foreign
+import Foreign (withArray)
 import System.IO.Unsafe
 
 declareExternFun :: String -> TypeQ -> Q [Dec]

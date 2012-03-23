@@ -14,13 +14,10 @@ Flag Tests
     description: build test cases
     default: False
 
-Flag ObjC2
-    description: build for Objective-C 2.0
-
 Flag base4
 
 Library
-    build-depends: template-haskell, unix
+    build-depends: template-haskell, unix, HOC-cbits == 1.0
     if flag(base4)
         build-depends: base >= 4, syb
         cpp-options: -DBASE4
@@ -34,7 +31,6 @@ Library
         HOC.SelectorNameMangling
     other-modules:
         HOC.Arguments,
-        HOC.Base,
         HOC.CEnum,
         HOC.CannedCIFs,
         HOC.Class,
@@ -65,14 +61,6 @@ Library
                 
     extra-libraries: objc, ffi
 
-        -- This is a hack.
-        -- Setup.hs contains code to build HOC_cbits.o from the
-        -- objective-c sources, as well as a matching hack to prevent
-        -- Cabal from invoking "ghc -c" on this file. Cabal will then
-        -- include HOC_cbits.o on the linker command line, which is the
-        -- whole point of this exercise.
-    c-sources: HOC_cbits.o
-
     if os(darwin)
         include-dirs: /usr/include/ffi
         frameworks: Foundation
@@ -83,10 +71,6 @@ Library
         cpp-options: -DGNUSTEP
         cc-options: -fobjc-exceptions
                     -D_NATIVE_OBJC_EXCEPTIONS=1
-
-    if flag(ObjC2)
-        cpp-options: -D__OBJC2__=1
-
 
 Executable hoc-ifgen
     main-is: Main.hs
