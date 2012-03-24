@@ -1,9 +1,10 @@
-{-# LANGUAGE ForeignFunctionInterface, DoRec,
+{-# LANGUAGE DoRec,
              MultiParamTypeClasses, FlexibleInstances #-}
 module HOC.ID where
 
 import HOC.Base
 import HOC.Arguments
+import HOC.CBits
 import HOC.FFICallInterface(FFICif)
 
 import Control.Concurrent.MVar
@@ -19,8 +20,6 @@ import Foreign.Marshal.Alloc(alloca)
 import Data.Dynamic
 import Data.Maybe(fromMaybe)
 
-data ID a = ID HSO | Nil
-
 dPutStrLn = if {--} False --} True
     then putStrLn
     else const $ return ()
@@ -31,12 +30,6 @@ nil = Nil
 
 castObject (ID a) = ID a
 castObject Nil = Nil
-
-instance Eq (ID a) where
-    (ID (HSO a _)) == (ID (HSO b _))    = a == b
-    Nil == Nil                          = True
-    _ == _                              = False
-
 
 {-
     *
@@ -58,9 +51,6 @@ instance Eq (ID a) where
     land.
 -}
 
--- HSO: HaskellSideObject
-data HSO = HSO (Ptr ObjCObject) [Dynamic]
-
 -- don't we love globals?  This needs -fno-cse to be truely safe.
 objectMapLock = unsafePerformIO $ newMVar ()
 {-# NOINLINE objectMapLock #-}
@@ -71,39 +61,6 @@ withObjectMapLock taker action = do
     dPutWords ["<", "withObjectMapLock", taker]
     return res
 
-
--- given a pointer to an ObjCObject, return a stablePtr to a Weak reference to 
--- a HSO
-foreign import ccall unsafe "ObjectMap.h getHaskellPart"
-    getHaskellPart :: Ptr ObjCObject -> IO (StablePtr (Weak HSO))
--- Sets the mapping of an ObjCObject to the HSO.  The CInt is a boolean flag 
--- used to set whether or not this objective-c object is immortal.  The is 
--- equivelent to saying removeHaskellPart will never be called for this object
-foreign import ccall unsafe "ObjectMap.h setHaskellPart"
-    setHaskellPart :: Ptr ObjCObject -> StablePtr (Weak HSO) -> CInt -> IO ()
--- remove the objcobject->HSO mapping.  You have to pass both because this 
--- method does nothing if the objCObject maps to a different HSO.  This can 
--- happen if the finalizer ran late and the object was reimported in the 
--- meantime.
-foreign import ccall unsafe "ObjectMap.h removeHaskellPart"
-    removeHaskellPart :: Ptr ObjCObject -> StablePtr (Weak HSO) -> IO ()
--- returns number of objects allocated in the map and the immortal count in the 
--- two pointers.
-foreign import ccall unsafe "ObjectMap.h objectMapStatistics"
-    c_objectMapStatistics :: Ptr CUInt -> Ptr CUInt -> IO ()
-
--- must be "safe", because it calls methods implemented in Haskell.
-foreign import ccall safe "GetNewHaskellData.h getNewHaskellData"
-    getNewHaskellData :: Ptr ObjCObject -> IO (StablePtr ([Dynamic]))
-foreign import ccall safe "GetNewHaskellData.h getNewHaskellDataForClass"
-    getNewHaskellDataForClass :: Ptr ObjCObject
-                              -> Ptr ObjCObject
-                              -> IO (StablePtr ([Dynamic]))
-
-foreign import ccall unsafe "RetainedHaskellPart.h getRetainedHaskellPart"
-    getRetainedHaskellPart :: Ptr ObjCObject -> IO (StablePtr HSO)
-foreign import ccall unsafe "RetainedHaskellPart.h setRetainedHaskellPart"
-    setRetainedHaskellPart :: Ptr ObjCObject -> StablePtr HSO -> IO ()
 replaceRetainedHaskellPart :: Ptr ObjCObject -> StablePtr HSO -> IO ()
 replaceRetainedHaskellPart self newHSO = do
     dPutWords ["replaceRetainedHaskellPart", show self, show (castStablePtrToPtr newHSO)]
@@ -112,28 +69,6 @@ replaceRetainedHaskellPart self newHSO = do
         when (castStablePtrToPtr oldHSO /= nullPtr) $ do
             freeStablePtr oldHSO
         setRetainedHaskellPart self newHSO
-
-foreign import ccall "MemoryManagement.h retainSuper"
-    retainSuper :: Ptr ObjCObject -> Ptr ObjCObject -> IO ()
-foreign import ccall "MemoryManagement.h releaseSuper"
-    releaseSuper :: Ptr ObjCObject -> Ptr ObjCObject -> IO ()
-foreign import ccall unsafe "MemoryManagement.h retainCount"
-    retainCount :: Ptr ObjCObject -> IO CUInt
-
--- Since finalizers are executed in arbitrary threads, we must
--- ensure that we establish an autoreleasepool for the duration
--- of the execution of the release/dealloc messages.
--- Since the execution of each finalizer might get spread out
--- over several native threads, we perform the operation
--- together with pool allocation in c, to avoid allocating the
--- pool in one thread, executing the release/dealloc in a second
--- and freeing the pool in a third.
-foreign import ccall "MemoryManagement.h releaseObjectWithPool"
-    releaseObjectWithPool :: Ptr ObjCObject -> IO ()
-foreign import ccall "MemoryManagement.h deallocObjectWithPool"
-    deallocObjectWithPool :: Ptr ObjCObject -> IO ()
-
-
 
 instance ObjCArgument (ID a) (Ptr ObjCObject) where
     -- remember that thing may be lazy and never evaluated,

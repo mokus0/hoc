@@ -9,6 +9,7 @@ import Data.Maybe(mapMaybe)
 import Data.Char(toUpper)
 
 import HOC.Base
+import HOC.CBits
 import HOC.MessageTarget
 import HOC.Arguments
 import HOC.Invocation

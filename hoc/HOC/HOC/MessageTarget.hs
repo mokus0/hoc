@@ -2,6 +2,7 @@
 module HOC.MessageTarget where
 
 import HOC.Base
+import HOC.CBits
 import HOC.Arguments
 import HOC.ID
 import HOC.MsgSend

@@ -1,5 +1,4 @@
-{-# LANGUAGE ForeignFunctionInterface, EmptyDataDecls,
-             MultiParamTypeClasses, FunctionalDependencies,
+{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies,
              TypeSynonymInstances, FlexibleContexts,
              FlexibleInstances #-}
 module HOC.Class where
@@ -8,19 +7,12 @@ import HOC.Base
 import HOC.Arguments
 import HOC.ID
 import HOC.MessageTarget
+import HOC.CBits
 
 import Foreign
 import Foreign.C.String
 
-data Class_ a
-type Class a = ID (Class_ a)
-type MetaClass a = Class (Class_ a)
-
-
 unsafeGetClassObject :: String -> Class a
-
-foreign import ccall unsafe "Class.h getClassByName"
-    c_getClassByName :: CString -> IO (Ptr ObjCObject)
 
 getClassByName name = withCString name c_getClassByName
 
@@ -33,9 +25,6 @@ unsafeGetClassObject name = unsafePerformIO $
 unsafeGetRawClassObject name = unsafePerformIO $
     getClassByName name
 
-
-foreign import ccall unsafe "Class.h getClassForObject"
-    c_getClassForObject :: Ptr ObjCObject -> IO (Ptr ObjCObject)
 
 getClassForObject obj = withExportedArgument obj c_getClassForObject
 

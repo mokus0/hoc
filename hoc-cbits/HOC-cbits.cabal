@@ -8,10 +8,30 @@ build-type: Custom
 Flag ObjC2
     description: build for Objective-C 2.0
 
+Flag base4
+
 Library
-    build-depends: base >= 3 && < 5
+    if flag(base4)
+        build-depends: base >= 4, syb
+        cpp-options: -DBASE4
+    else
+        build-depends: base < 4
+    
     hs-source-dirs: src
-    exposed-modules: HOC.Base
+    exposed-modules:  HOC.CBits
+                      HOC.CBits.Class
+                      HOC.CBits.Exceptions
+                      HOC.CBits.GetNewHaskellData
+                      HOC.CBits.Invocation
+                      HOC.CBits.Marshalling
+                      HOC.CBits.MemoryManagement
+                      HOC.CBits.MsgSend
+                      HOC.CBits.NewClass
+                      HOC.CBits.ObjectMap
+                      HOC.CBits.RetainedHaskellPart
+                      HOC.CBits.Statistics
+                      HOC.CBits.Types
+                      HOC.FFICallInterface
     
     c-sources: cbits/Class.m
                cbits/Exceptions.m

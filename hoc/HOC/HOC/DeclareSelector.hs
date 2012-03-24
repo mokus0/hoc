@@ -1,12 +1,10 @@
 {-# LANGUAGE TemplateHaskell, EmptyDataDecls #-}
 module HOC.DeclareSelector where
     
-import HOC.Arguments
-import HOC.Invocation
+import HOC.CBits
 import HOC.SelectorNameMangling
 import HOC.SelectorMarshaller
 import HOC.StdArgumentTypes     ()
-import HOC.ID
 import HOC.NewlyAllocated       (NewlyAllocated)
 import HOC.Super
 import HOC.CannedCIFs

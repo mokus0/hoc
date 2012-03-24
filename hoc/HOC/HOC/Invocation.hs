@@ -1,4 +1,3 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
 module HOC.Invocation where
 
 import Foreign
@@ -6,15 +5,11 @@ import Foreign.C            ( CInt )
 import Control.Monad        ( when )
 
 import HOC.Base
+import HOC.CBits
 import HOC.Arguments
 import HOC.FFICallInterface
 
 import HOC.Exception
-
-foreign import ccall "Invocation.h callWithExceptions"
-    c_callWithExceptions :: FFICif -> FunPtr a
-                        -> Ptr b -> Ptr (Ptr ())
-                        -> IO (Ptr ObjCObject) {- NSException -}
 
 callWithException cif fun ret args = do
     exception <- c_callWithExceptions cif fun ret args
@@ -56,8 +51,6 @@ getMarshalledArgument args idx = do
     importArgument arg
     
     
-foreign import ccall unsafe recordHOCEvent :: CInt -> Ptr (Ptr ()) -> IO ()
-
 kHOCEnteredHaskell = 1 :: CInt
 kHOCImportedArguments = 2 :: CInt
 kHOCAboutToExportResult = 3 :: CInt

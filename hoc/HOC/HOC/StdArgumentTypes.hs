@@ -1,10 +1,11 @@
-{-# LANGUAGE TemplateHaskell, ForeignFunctionInterface,
+{-# LANGUAGE TemplateHaskell,
              MultiParamTypeClasses, UndecidableInstances,
              TypeSynonymInstances, FlexibleInstances,
              ScopedTypeVariables #-}
 module HOC.StdArgumentTypes where
 
 import HOC.Base
+import HOC.CBits
 import HOC.Arguments
 import HOC.FFICallInterface
 
@@ -66,13 +67,6 @@ $(declareStorableObjCArgument [t| CLLong |] "q")
 $(declareStorableObjCArgument [t| CULLong |] "Q")
 
 -- String
-
-
-foreign import ccall safe "Marshalling.h nsStringToUTF8"
-    nsStringToUTF8 :: Ptr ObjCObject -> IO (Ptr Word8)
-
-foreign import ccall unsafe "Marshalling.h utf8ToNSString"
-    utf8ToNSString :: Ptr Word8 -> IO (Ptr ObjCObject)
 
 withUTF8String str = withArray0 0 (unicodeToUtf8 str)
 

@@ -67,13 +67,13 @@ module HOC (
         objectMapStatistics
     ) where
 
+import HOC.CBits
 import HOC.Base
 import HOC.Arguments
 import HOC.ID
 import HOC.MessageTarget
 import HOC.Class
 import HOC.DeclareClass
-import HOC.ExportClass
 import HOC.DeclareSelector
 import HOC.ExportClass
 import HOC.Utilities

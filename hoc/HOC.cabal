@@ -31,6 +31,7 @@ Library
         HOC.SelectorNameMangling
     other-modules:
         HOC.Arguments,
+        HOC.Base,
         HOC.CEnum,
         HOC.CannedCIFs,
         HOC.Class,
@@ -40,7 +41,6 @@ Library
         HOC.ExportClass,
         HOC.ExternConstants,
         HOC.ExternFunctions,
-        HOC.FFICallInterface,
         HOC.ID,
         HOC.MessageTarget,
         HOC.Invocation,

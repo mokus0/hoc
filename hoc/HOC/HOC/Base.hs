@@ -5,12 +5,10 @@ import Control.Exception(bracket)
 import Foreign.C.String (CString, withCString)
 import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.Storable (Storable)
+import HOC.CBits.Types
 import System.IO.Unsafe (unsafePerformIO)
 
 -- The SEL Type
-
-newtype SEL = SEL (Ptr ())
-    deriving(Storable)
 
 foreign import ccall unsafe "Selector.h getSelectorForName"
     c_getSelectorForName :: CString -> IO SEL  
@@ -39,7 +37,3 @@ foreign import ccall "MemoryManagement.h newAutoreleasePool"
     newAutoreleasePool :: IO (Ptr ObjCObject)
 
 withAutoreleasePool action = bracket newAutoreleasePool releaseObject (const action)
-
---
-
-data ObjCObject

@@ -9,6 +9,7 @@ module HOC.SelectorMarshaller(
     ) where
 
 import HOC.Base
+import HOC.CBits
 import HOC.ID
 import HOC.Invocation
 import HOC.FFICallInterface

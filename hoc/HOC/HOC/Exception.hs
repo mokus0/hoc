@@ -1,4 +1,4 @@
-{-# LANGUAGE ForeignFunctionInterface, DeriveDataTypeable, 
+{-# LANGUAGE DeriveDataTypeable, 
              ScopedTypeVariables, CPP #-}
 module HOC.Exception where
 
@@ -9,6 +9,7 @@ import Prelude              hiding ( catch )
 import Control.Exception
 
 import HOC.Base
+import HOC.CBits
 import HOC.Arguments
 import HOC.ID
 
@@ -18,11 +19,6 @@ data WrappedNSException = WrappedNSException (ID ())
 exceptionObjCToHaskell :: Ptr ObjCObject -> IO a
 
 #ifdef BASE4
-
-foreign import ccall unsafe wrapHaskellException
-    :: CString -> StablePtr SomeException -> IO (Ptr ObjCObject)
-foreign import ccall unsafe unwrapHaskellException
-    :: Ptr ObjCObject -> IO (StablePtr SomeException)
 
 -- get the exception pointer figure out if it is a NSException
 -- or a haskell exception and throw it.
@@ -57,11 +53,6 @@ catchWrappedNSException :: IO a -> (WrappedNSException -> IO a) -> IO a
 catchWrappedNSException = catch
 
 #else
-
-foreign import ccall unsafe wrapHaskellException
-    :: CString -> StablePtr Exception -> IO (Ptr ObjCObject)
-foreign import ccall unsafe unwrapHaskellException
-    :: Ptr ObjCObject -> IO (StablePtr Exception)
 
 -- get the exception pointer figure out if it is a NSException
 -- or a haskell exception and throw it.

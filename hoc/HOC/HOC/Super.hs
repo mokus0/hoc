@@ -5,7 +5,7 @@ module HOC.Super(
         SuperClass, SuperTarget, Super(super), withExportedSuper, castSuper
     ) where
 
-import HOC.Base
+import HOC.CBits
 import HOC.Arguments
 import HOC.Class
 import HOC.ID

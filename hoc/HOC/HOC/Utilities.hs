@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module HOC.Utilities where
 
-import HOC.Base
+import HOC.CBits
 import HOC.Arguments
 import HOC.TH
 import HOC.ExportClass

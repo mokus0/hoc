@@ -1,4 +1,3 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
 module HOC.NewClass(
         IMP,
         MethodList,
@@ -15,6 +14,7 @@ module HOC.NewClass(
     ) where
 
 import HOC.Base
+import HOC.CBits
 import HOC.ID
 import HOC.FFICallInterface
 import HOC.Arguments
@@ -22,18 +22,6 @@ import HOC.Arguments
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign
-
-type IMP = FFICif -> Ptr () -> Ptr (Ptr ()) -> IO (Ptr ObjCObject)
-foreign import ccall "wrapper" wrapIMP :: IMP -> IO (FunPtr IMP)
-
-newtype MethodList = MethodList (ForeignPtr MethodList)
-newtype IvarList = IvarList (ForeignPtr IvarList)
-
-foreign import ccall "NewClass.h newClass"
-    rawNewClass :: Ptr ObjCObject -> CString
-             -> Ptr IvarList
-             -> Ptr MethodList -> Ptr MethodList
-             -> IO ()
 
 newClass :: Ptr ObjCObject -> CString
              -> IvarList
@@ -44,21 +32,6 @@ newClass sc name (IvarList ivars) (MethodList ms) (MethodList cms) =
         withForeignPtr ms $ \ms ->
             withForeignPtr cms $ \cms -> do
                 rawNewClass sc name ivars ms cms
-
-foreign import ccall "NewClass.h makeMethodList"
-    rawMakeMethodList :: Int -> IO (Ptr MethodList)
-foreign import ccall "NewClass.h setMethodInList"
-    rawSetMethodInList :: Ptr MethodList -> Int
-                    -> SEL -> CString
-                    -> FFICif -> FunPtr IMP
-                    -> IO ()
-
-                      
-foreign import ccall "NewClass.h makeIvarList"
-    rawMakeIvarList :: Int -> IO (Ptr IvarList)
-foreign import ccall "NewClass.h setIvarInList"
-    rawSetIvarInList :: Ptr IvarList -> Int
-                  -> CString -> CString -> CSize -> Word8 -> IO ()
 
 makeIvarList :: Int -> IO IvarList
 makeIvarList n = do

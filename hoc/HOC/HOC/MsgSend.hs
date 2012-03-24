@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, ForeignFunctionInterface #-}
+{-# LANGUAGE CPP #-}
 module HOC.MsgSend(
         objSendMessageWithRetval,
         objSendMessageWithoutRetval,
@@ -7,6 +7,7 @@ module HOC.MsgSend(
     ) where
 
 import HOC.Base
+import HOC.CBits
 import HOC.FFICallInterface
 import HOC.Arguments
 import HOC.Invocation
@@ -36,12 +37,6 @@ superSendMessageWithoutRetval
 
 #ifdef GNUSTEP
 
-foreign import ccall "objc/objc.h objc_msg_lookup"
-    objc_msg_lookup :: Ptr ObjCObject -> SEL -> IO (FunPtr ())
-
-foreign import ccall "objc/objc.h objc_msg_lookup_super"
-    objc_msg_lookup_super :: Ptr ObjCObject -> SEL -> IO (FunPtr ())
-    
 sndMsgCommon call cif args = do
     target <- peekElemOff args 0 >>= peek . castPtr
     selector <- peekElemOff args 1 >>= peek . castPtr
@@ -67,19 +62,6 @@ superSendMessageWithRetval    = sndMsgSuperCommon callWithRetval
 superSendMessageWithoutRetval = sndMsgSuperCommon callWithoutRetval
 
 #else
-
-    -- the type signatures are essentially bogus
-    -- the return value is not necessarily (), and might even be a struct.
-    -- we only call them via libffi, so we couldn't care less.
-foreign import ccall "MsgSend.h &objc_msgSend"
-    objc_msgSendPtr :: FunPtr (Ptr ObjCObject -> SEL -> IO ())
-foreign import ccall "MsgSend.h &objc_msgSend_stret"
-    objc_msgSend_stretPtr :: FunPtr (Ptr ObjCObject -> SEL -> IO ())
-
-foreign import ccall "MsgSend.h &objc_msgSendSuper"
-    objc_msgSendSuperPtr :: FunPtr (Ptr ObjCObject -> SEL -> IO ())
-foreign import ccall "MsgSend.h &objc_msgSendSuper_stret"
-    objc_msgSendSuper_stretPtr :: FunPtr (Ptr ObjCObject -> SEL -> IO ())
 
 withMarshalledDummy :: ObjCArgument a b => (b -> IO a) -> IO a
 withMarshalledDummy action = action undefined

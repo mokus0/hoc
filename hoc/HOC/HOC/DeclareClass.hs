@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module HOC.DeclareClass(declareClass) where
 
+import HOC.CBits
 import HOC.Class
 import HOC.Super
 

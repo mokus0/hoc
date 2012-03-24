@@ -1,9 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 module HOC.CannedCIFs where
 
-import HOC.Base         ( SEL )
+import HOC.CBits        ( ID, SEL )
 import HOC.Arguments    ( getCifForSelector )
-import HOC.ID           ( ID )
 import HOC.TH           ( fromSameModuleAs_v )
 -- import HOC.THDebug
 

@@ -13,7 +13,7 @@ module HOC.NewlyAllocated where
     the call to alloc and the call to init.
 -}
 
-import HOC.Base         ( ObjCObject )
+import HOC.CBits        ( ID, Class, ObjCObject )
 import HOC.Arguments    ( ObjCArgument(..) )
 import HOC.Class
 import HOC.ID
