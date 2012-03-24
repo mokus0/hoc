@@ -4,7 +4,6 @@
              ScopedTypeVariables #-}
 module HOC.StdArgumentTypes where
 
-import HOC.Base
 import HOC.CBits
 import HOC.Arguments
 import HOC.FFICallInterface

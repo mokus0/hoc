@@ -6,7 +6,6 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Data.Maybe                   ( fromMaybe )
 import Control.Monad                ( when )
-import System.IO
 import System.Environment           ( getArgs )
 import System.Console.GetOpt
 import System.FilePath              ( (</>) )

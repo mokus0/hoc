@@ -1,4 +1,3 @@
-{-# OPTIONS -fglasgow-exts #-}
 module ExpandSynonyms where
 
 import Language.Haskell.TH

@@ -6,7 +6,6 @@ module HOC.MsgSend(
         superSendMessageWithoutRetval
     ) where
 
-import HOC.Base
 import HOC.CBits
 import HOC.FFICallInterface
 import HOC.Arguments

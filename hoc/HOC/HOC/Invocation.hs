@@ -4,7 +4,6 @@ import Foreign
 import Foreign.C            ( CInt )
 import Control.Monad        ( when )
 
-import HOC.Base
 import HOC.CBits
 import HOC.Arguments
 import HOC.FFICallInterface

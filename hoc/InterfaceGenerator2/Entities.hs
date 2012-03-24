@@ -13,7 +13,6 @@ import Progress
 import SrcPos( SrcPos )
 
 import Data.ByteString.Char8(ByteString)
-import qualified Data.ByteString.Char8 as BS
 
 type Framework = ByteString
 data EntityID

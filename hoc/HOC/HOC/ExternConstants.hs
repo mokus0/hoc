@@ -6,7 +6,9 @@ import HOC.Arguments
 import HOC.NameCaseChange
 import HOC.Dyld
 
-import Foreign
+import Foreign.Ptr (castFunPtrToPtr)
+import Foreign.Storable (peek)
+import System.IO.Unsafe (unsafePerformIO)
 
 declareExternConst :: String -> TypeQ -> Q [Dec]
 

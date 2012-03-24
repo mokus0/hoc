@@ -2,7 +2,6 @@
              MultiParamTypeClasses, FlexibleInstances #-}
 module HOC.ID where
 
-import HOC.Base
 import HOC.Arguments
 import HOC.CBits
 import HOC.FFICallInterface(FFICif)
@@ -14,7 +13,6 @@ import System.IO.Unsafe(unsafePerformIO)
 import System.Mem.Weak
 import Foreign.Ptr
 import Foreign.StablePtr
-import Foreign.C.Types(CInt,CUInt)
 import Foreign.Storable
 import Foreign.Marshal.Alloc(alloca)
 import Data.Dynamic

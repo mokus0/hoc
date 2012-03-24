@@ -4,7 +4,6 @@ module HOC.ExportClass where
 import Foreign.C.String
 import Control.Concurrent.MVar
 import Data.Dynamic
-import Data.Typeable
 import Data.Maybe(mapMaybe)
 import Data.Char(toUpper)
 

@@ -4,14 +4,13 @@ module HOC.Exception where
 
 import Data.Typeable
 import Foreign
-import Foreign.C.String     ( CString, withCString )
+import Foreign.C.String     ( withCString )
 import Prelude              hiding ( catch )
 import Control.Exception
 
-import HOC.Base
 import HOC.CBits
 import HOC.Arguments
-import HOC.ID
+import HOC.ID ({- instances -})
 
 data WrappedNSException = WrappedNSException (ID ())
     deriving Typeable

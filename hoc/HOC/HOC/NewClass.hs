@@ -16,7 +16,6 @@ module HOC.NewClass(
 import HOC.Base
 import HOC.CBits
 import HOC.ID
-import HOC.FFICallInterface
 import HOC.Arguments
 
 import Foreign.C.String

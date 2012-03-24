@@ -1,4 +1,3 @@
-{-# LANGUAGE ForeignFunctionInterface, EmptyDataDecls, GeneralizedNewtypeDeriving #-}
 module HOC.Base where
 
 import Control.Exception(bracket)
