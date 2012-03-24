@@ -9,6 +9,7 @@ module HOC.TH(
     ) where
 
 import Language.Haskell.TH
+import Language.Haskell.TH.Extras
 import Language.Haskell.TH.Syntax
 
 -- instance Functor Q where
@@ -17,7 +18,7 @@ import Language.Haskell.TH.Syntax
 whereQ :: ([Q Dec] -> Q a) -> Q [Dec] -> Q a
 header `whereQ` declsQ = do
     decls <- declsQ
-    header (map return decls)
+    header (map return (genericalizeDecs decls))
 
 {-
 fromSameModuleAs_tc :: String -> Name -> Name
