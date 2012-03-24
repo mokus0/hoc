@@ -5,6 +5,18 @@ import HOC.CBits.Types
 import Foreign.C.Types
 import Foreign.Ptr
 
+foreign import ccall "MemoryManagement.h retainObject"
+    retainObject :: Ptr ObjCObject -> IO ()
+foreign import ccall "MemoryManagement.h releaseObject"
+    releaseObject :: Ptr ObjCObject -> IO ()
+foreign import ccall "MemoryManagement.h deallocObject"
+    deallocObject :: Ptr ObjCObject -> IO ()
+
+foreign import ccall "MemoryManagement.h autoreleaseObject"
+    autoreleaseObject :: Ptr ObjCObject -> IO ()
+foreign import ccall "MemoryManagement.h newAutoreleasePool"
+    newAutoreleasePool :: IO (Ptr ObjCObject)
+
 foreign import ccall "MemoryManagement.h retainSuper"
     retainSuper :: Ptr ObjCObject -> Ptr ObjCObject -> IO ()
 foreign import ccall "MemoryManagement.h releaseSuper"
