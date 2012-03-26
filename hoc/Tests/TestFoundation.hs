@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, TypeSynonymInstances, FlexibleInstances,
-             MultiParamTypeClasses, RankNTypes, DeriveDataTypeable, CPP #-}
+             MultiParamTypeClasses, RankNTypes, DeriveDataTypeable #-}
 module TestFoundation where
 
 import HOC
@@ -304,12 +304,8 @@ tests = test [
                 let nilNumber = nil :: NSNumber ()
                 result <- try (nilNumber # intValue)
                 expected <- try (fail "Message sent to nil: intValue")
-#ifdef BASE4
                 show (result :: Either SomeException CInt) 
                     @?= show (expected :: Either SomeException CInt)
-#else
-                result @?= expected
-#endif                
             )            
         ],
         "Super" ~: test [
@@ -394,12 +390,8 @@ tests = test [
             "HtoCtoH" ~: (do
                 obj <- _ExceptionThrower # alloc >>= init
                 result <- try (obj # throwHaskellException)
-#ifdef BASE4
                 show (result :: Either SomeException ()) 
                     @?= "Left user error (Test Exception)"
-#else
-                show result @?= "Left user error (Test Exception)"
-#endif
             ),
             "CtoHtoCtoH" ~: (do
                 obj <- _ExceptionThrower # alloc >>= init

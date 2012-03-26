@@ -10,16 +10,11 @@ Flag BinaryInterfaces
     description: write HOC interface generator files in binary format
                  (requires binary package)
 
-Flag base4
-
 Library
-    if flag(base4)
-        build-depends:  base >= 4, syb
-        cpp-options: -DBASE4
-    else
-        build-depends:  base < 4
-    build-depends:      HOC-cbits == 1.0,
+    build-depends:      base >= 4,
+                        HOC-cbits == 1.0,
                         mtl,
+                        syb,
                         template-haskell,
                         th-extras,
                         unix
@@ -76,12 +71,8 @@ Executable hoc-ifgen
     main-is: Main.hs
     hs-source-dirs: HOC, InterfaceGenerator2
 
-    if flag(base4)
-        build-depends:  base >= 4, syb
-        cpp-options: -DBASE4
-    else
-        build-depends:  base < 4
-    build-depends:      bytestring,
+    build-depends:      base >= 4,
+                        bytestring,
                         containers,
                         directory,
                         fgl,
@@ -90,6 +81,7 @@ Executable hoc-ifgen
                         old-time,
                         parsec >= 3.0,
                         pretty,
+                        syb,
                         template-haskell
     
     if flag(BinaryInterfaces)
@@ -102,17 +94,14 @@ Test-Suite hoc-test
     hs-source-dirs: HOC, InterfaceGenerator2, Tests
     
     cpp-options: -DTEST
-
-    if flag(base4)
-        build-depends:  base >= 4, syb
-        cpp-options: -DBASE4
-    else
-        build-depends:  base < 4
-    build-depends:      containers,
+    
+    build-depends:      base >= 4,
+                        containers,
                         HOC-cbits,
                         HUnit,
                         mtl,
                         parsec >= 3,
+                        syb,
                         template-haskell,
                         th-extras,
                         unix

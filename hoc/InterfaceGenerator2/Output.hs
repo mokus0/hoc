@@ -293,17 +293,10 @@ pprCabalFile frameworkName dependencies entities
     = text "name:" <+> text "HOC-" <> text frameworkName $+$
       text "version: 1.0" $+$
       text "build-type: Simple" $+$
-      text "Flag base4" $+$
       text "Library" $+$ nest 4 (              
-          text "if flag(base4)" $+$ nest 4 (
-              text "build-depends: base >= 4" $+$
-              text "cpp-options: -DBASE4" -- don't neeed the define yet, though
-          ) $+$ text "else" $+$ nest 4 (
-              text "build-depends: base < 4"
-          ) $+$
           text "build-depends:" <+>
               hsep (punctuate comma $ map text $
-                    ["HOC"] ++ map ("HOC-" ++) dependencies) $+$
+                    ["base >= 4", "HOC"] ++ map ("HOC-" ++) dependencies) $+$
           text "exposed-modules:" <+> sep (punctuate comma $
                                             map textBS $ BS.pack frameworkName : modules) $+$
           text "frameworks:" <+> text frameworkName
