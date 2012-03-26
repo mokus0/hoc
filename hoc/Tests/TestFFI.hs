@@ -26,7 +26,7 @@ type Invoker = forall a b c d.
     (ObjCArgument a a, ObjCArgument b b) =>
     FFICif -> FunPtr (a -> b) -> Ptr (Ptr ()) -> IO b
 
-testArgAndResult :: (Num a, Num b, ObjCArgument a a, ObjCArgument b b)
+testArgAndResult :: (Eq a, Num a, Eq b, Show b, Num b, ObjCArgument a a, ObjCArgument b b)
                  => Invoker -> FunPtr (a -> b) -> IO ()
 
 

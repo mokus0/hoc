@@ -2,7 +2,7 @@ name: HOC
 version: 1.0
 license: BSD4
 license-file: LICENSE
-cabal-version: >= 1.2
+cabal-version: >= 1.9.2
 build-type: Custom
 extra-tmp-files: HOC.buildinfo
 
@@ -10,19 +10,19 @@ Flag BinaryInterfaces
     description: write HOC interface generator files in binary format
                  (requires binary package)
 
-Flag Tests
-    description: build test cases
-    default: False
-
 Flag base4
 
 Library
-    build-depends: template-haskell, unix, th-extras, HOC-cbits == 1.0
     if flag(base4)
-        build-depends: base >= 4, syb
+        build-depends:  base >= 4, syb
         cpp-options: -DBASE4
     else
-        build-depends: base < 4
+        build-depends:  base < 4
+    build-depends:      HOC-cbits == 1.0,
+                        mtl,
+                        template-haskell,
+                        th-extras,
+                        unix
                    
     exposed-modules:
         HOC,
@@ -76,28 +76,47 @@ Executable hoc-ifgen
     main-is: Main.hs
     hs-source-dirs: HOC, InterfaceGenerator2
 
-    build-depends: containers, bytestring, mtl, pretty, parsec >= 3.0, fgl,
-                   old-time, directory, filepath
+    if flag(base4)
+        build-depends:  base >= 4, syb
+        cpp-options: -DBASE4
+    else
+        build-depends:  base < 4
+    build-depends:      bytestring,
+                        containers,
+                        directory,
+                        fgl,
+                        filepath,
+                        mtl,
+                        old-time,
+                        parsec >= 3.0,
+                        pretty,
+                        template-haskell
+    
     if flag(BinaryInterfaces)
-        build-depends: binary >= 0.2
+        build-depends:  binary >= 0.2
         cpp-options: -DBINARY_INTERFACES
 
-Executable hoc-test
+Test-Suite hoc-test
+    type: exitcode-stdio-1.0
     main-is: Test.hs
     hs-source-dirs: HOC, InterfaceGenerator2, Tests
     
     cpp-options: -DTEST
 
-    build-depends: HUnit, template-haskell, unix
     if flag(base4)
-        build-depends: base >= 4, syb
+        build-depends:  base >= 4, syb
         cpp-options: -DBASE4
     else
-        build-depends: base < 4
+        build-depends:  base < 4
+    build-depends:      containers,
+                        HOC-cbits,
+                        HUnit,
+                        mtl,
+                        parsec >= 3,
+                        template-haskell,
+                        th-extras,
+                        unix
 
-    if !flag(Tests)
-        buildable: False
-  
     extra-libraries: objc, ffi
     if os(darwin)
         frameworks: Foundation
