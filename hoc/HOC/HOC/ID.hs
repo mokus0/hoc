@@ -1,4 +1,4 @@
-{-# LANGUAGE DoRec, MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE DoRec, MultiParamTypeClasses, FlexibleInstances, NPlusKPatterns #-}
 module HOC.ID where
 
 import HOC.Arguments
