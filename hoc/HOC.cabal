@@ -93,8 +93,6 @@ Test-Suite hoc-test
     main-is: Test.hs
     hs-source-dirs: HOC, InterfaceGenerator2, Tests
     
-    cpp-options: -DTEST
-    
     build-depends:      base >= 4,
                         containers,
                         HOC-cbits,
