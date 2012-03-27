@@ -60,6 +60,8 @@ Library
     
     if flag(Trace)
         cpp-options: -DDO_LOG=1
+        cc-options:  -DDO_LOG=1
     
     if flag(ObjC2)
         cpp-options: -D__OBJC2__=1
+        cc-options:  -D__OBJC2__=1
