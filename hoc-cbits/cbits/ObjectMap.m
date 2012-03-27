@@ -30,10 +30,11 @@ NSMapTable *getTheObjectMap()
  */
 void *getHaskellPart(void* objcPart)
 {
+    void *hsPart = NSMapGet(getTheObjectMap(), objcPart);
 #if DO_LOG
-    NSLog(@"lookup %p", objcPart);
+    NSLog(@"lookup %p -> %p", objcPart, hsPart);
 #endif
-    return NSMapGet(getTheObjectMap(), objcPart);
+    return hsPart;
 }
 
 void setHaskellPart(void* objcPart, void* haskellPart, int immortal)

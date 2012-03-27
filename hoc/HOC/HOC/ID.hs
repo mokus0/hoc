@@ -105,6 +105,7 @@ importArgument' immortal p
     | p == nullPtr = return Nil
     | otherwise = do
         (haskellObj, retain) <- withObjectMapLock "importArgument'" $ do
+        (haskellObj, retain) <- withObjectMapLock ("(importArgument' " ++ show immortal ++ " " ++ show p ++ ")") $ do
             mbHaskellObj <- lookupHSO p
             case mbHaskellObj of
                 -- if the HSO already exists, we're done!
@@ -144,6 +145,7 @@ makeNewHSO immortal p =
 finalizeID :: Ptr ObjCObject -> StablePtr (Weak HSO) -> IO ()
 finalizeID cObj sptr = do
     withObjectMapLock "finalizeID" $ removeHaskellPart cObj sptr
+    withObjectMapLock ("(finalizeID " ++ show cObj ++ " " ++ show (castStablePtrToPtr sptr) ++ ")") $ removeHaskellPart cObj sptr
     
     releaseObjectWithPool cObj
     freeStablePtr sptr
