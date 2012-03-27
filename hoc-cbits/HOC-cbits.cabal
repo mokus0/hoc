@@ -6,6 +6,7 @@ cabal-version: >= 1.2
 build-type: Custom
 
 Flag Trace
+    default: False
     description: print trace messages to console from low-level code
 
 Flag ObjC2
