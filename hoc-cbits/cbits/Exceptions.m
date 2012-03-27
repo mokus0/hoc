@@ -104,11 +104,7 @@ id wrapHaskellException(char *name, HsStablePtr hexc)
 
 HsStablePtr unwrapHaskellException(id cexc)
 {
-#if GNUSTEP
-    if(cexc->class_pointer == clsHOCHaskellException)
-#else
-    if(cexc->isa == clsHOCHaskellException)
-#endif
+    if(getClassForObject(cexc) == clsHOCHaskellException)
     {
         return *(HsStablePtr*) (((char*)cexc) + stablePtrOffset);
     }

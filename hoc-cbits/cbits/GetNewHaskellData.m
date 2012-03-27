@@ -5,6 +5,7 @@
 #include <objc/objc-runtime.h>
 #endif
 
+#include "Class.h"
 #include "GetNewHaskellData.h"
 #include "Selector.h"
 
@@ -64,9 +65,5 @@ void *getNewHaskellDataForClass(id obj, Class isa)
 
 void *getNewHaskellData(id obj)
 {
-#ifdef GNUSTEP
-    return getNewHaskellDataForClass(obj, obj->class_pointer);
-#else
-    return getNewHaskellDataForClass(obj, obj->isa);
-#endif
+    return getNewHaskellDataForClass(obj, getClassForObject(obj));
 }
