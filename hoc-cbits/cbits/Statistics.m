@@ -1,3 +1,4 @@
+#import "Log.h"
 #import "Statistics.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -37,7 +38,9 @@ void recordHOCEvent(int what, void ** args)
     obj = *(id*)  args[0];
     sel = *(SEL*) args[1];
     
-    //printf("recordHOCEvent %d %p %s\n", what, obj, sel_get_name(sel));
+    #if DO_LOG
+    printf("recordHOCEvent %d %p %s\n", what, obj, sel_getName(sel));
+    #endif
     
 #ifdef DO_TIMINGS
     static uint64_t saved;
