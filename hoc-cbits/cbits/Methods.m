@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <sys/mman.h>
 #include "Methods.h"
 #include "Statistics.h"
 
@@ -17,7 +18,13 @@ static void objcIMP(ffi_cif *cif, void * ret, void **args, void *userData)
 
 static ffi_closure *newIMP(ffi_cif *cif, haskellIMP imp)
 {
-    ffi_closure *closure = (ffi_closure*) calloc(1, sizeof(ffi_closure));
+    //ffi_closure *closure = (ffi_closure*) calloc(1, sizeof(ffi_closure));
+    ffi_closure *closure = mmap(NULL, sizeof(ffi_closure), PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON | MAP_PRIVATE, -1, 0);
+    if (closure == (void*)-1)
+    {
+        // TODO: Check errno and handle the error.
+    }
+
     ffi_prep_closure(closure, cif, &objcIMP, (void*) imp);
     return closure;
 }
