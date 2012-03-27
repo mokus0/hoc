@@ -19,8 +19,9 @@ $(declareClass "NSArray" "NSObject")
 $(declareClass "NSMutableArray" "NSArray")
 $(declareClass "NSDictionary" "NSObject")
 
-$(declareCStructWithTag "NSPoint" (Prelude.Just "_NSPoint") [[t| Float |],[t| Float |]])
-$(declareCStructWithTag "NSSize" (Prelude.Just "_NSSize") [[t| Float |],[t| Float |]])
+-- TODO: introduce CGFloat type?
+$(declareCStructWithTag "NSPoint" (Prelude.Just "_NSPoint") [[t| Double |],[t| Double |]])
+$(declareCStructWithTag "NSSize" (Prelude.Just "_NSSize") [[t| Double |],[t| Double |]])
 $(declareCStructWithTag "NSRect" (Prelude.Just "_NSRect") [[t| NSPoint |],[t| NSSize |]])
 
 -- NSObject selectors
@@ -56,7 +57,7 @@ $(declareSelector "shortValue" [t| IO CShort |])
 $(declareSelector "longLongValue" [t| IO CLLong |])
 $(declareSelector "boolValue" [t| IO Bool |])
 $(declareSelector "floatValue" [t| IO Float |])
-$(declareSelector "doubleValue" [t| IO Float |])
+$(declareSelector "doubleValue" [t| IO Double |])
 $(declareSelector "intValue" [t| IO CInt |])
 
 $(declareSelector "valueWithPoint:" [t| NSPoint -> IO (NSValue ()) |])
