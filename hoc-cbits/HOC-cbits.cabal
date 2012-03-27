@@ -11,8 +11,6 @@ Flag Trace
 Flag ObjC2
     description: build for Objective-C 2.0
 
-Flag base4
-
 Library
     build-depends: base >= 4
     hs-source-dirs: src
