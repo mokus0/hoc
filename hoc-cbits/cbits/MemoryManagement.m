@@ -135,7 +135,7 @@ unsigned int retainCount(id obj) {
     if(!selRetainCount)
         selRetainCount = getSelectorForName("retainCount");
     
-    rc = (unsigned int) objc_msgSend(obj,selRetainCount);
+    rc = (unsigned int) (unsigned long) objc_msgSend(obj,selRetainCount);
 #if DO_LOG
     printf("%d\n",rc);
 #endif
