@@ -137,7 +137,9 @@ instance FFITypeable CDouble where
 -- ### FIXME: this should be autoconfigured.
 -- The following are correct for Mac OS X
 instance FFITypeable Int where
-    makeFFIType _ = return ffi_type_sint32
+    makeFFIType _ = return ffi_type_sint64
+instance FFITypeable Word where
+    makeFFIType _ = return ffi_type_uint64
 
 instance FFITypeable Float where
     makeFFIType _ = return ffi_type_float
@@ -177,9 +179,9 @@ instance FFITypeable CUInt where
     allocaRetval = promotedAlloca
 
 instance FFITypeable CLong where
-    makeFFIType _ = return ffi_type_sint32
+    makeFFIType _ = return ffi_type_sint64
 instance FFITypeable CULong where
-    makeFFIType _ = return ffi_type_uint32
+    makeFFIType _ = return ffi_type_uint64
 
 instance FFITypeable CLLong where
     makeFFIType _ = return ffi_type_sint64

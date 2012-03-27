@@ -31,7 +31,7 @@ instance ObjCArgument Bool CSChar where
     
     objCTypeString _ = "c"
 
-$(declareStorableObjCArgument [t| Int |] "i")
+$(declareStorableObjCArgument [t| Int |] "l")
 $(declareStorableObjCArgument [t| Float |] "f")
 $(declareStorableObjCArgument [t| Double |] "d")
 

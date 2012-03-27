@@ -113,9 +113,9 @@ repTypeName t
                | t == ''Bool    -> Just "char"
         _ -> Nothing
     where
-        ptr  = "word"
-        int  = "word"    -- ### NOT TRUE FOR 64 BITS
-        hInt = "word"
+        ptr  = "ptr"
+        int  = "cint"
+        hInt = "hint"
 
 -- for quoted type qt, this returns 
 getCifTypeName qt
