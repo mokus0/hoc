@@ -1,9 +1,8 @@
 #include <Foundation/Foundation.h>
 #include <stdlib.h>
 
+#include "Log.h"
 #include "ObjectMap.h"
-
-#define DO_LOG 0
 
 NSMapTable *gObjectMap = NULL;
 int immortalCount = 0;

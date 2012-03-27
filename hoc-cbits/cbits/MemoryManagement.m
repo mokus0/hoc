@@ -6,9 +6,8 @@
 
 #include <stdlib.h>
 
+#include "Log.h"
 #include "MemoryManagement.h"
-
-#define DO_LOG 0
 
 #if 0
 

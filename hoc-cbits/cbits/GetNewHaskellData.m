@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #ifdef GNUSTEP
 #include <objc/objc-api.h>
@@ -10,7 +9,7 @@
 #include "GetNewHaskellData.h"
 #include "Selector.h"
 
-#define DO_LOG 0
+#include "Log.h"
 
 /*
     Why don't we use normal Objective-C messaging?
