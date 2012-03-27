@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #ifdef GNUSTEP
 #include <objc/objc-api.h>
@@ -8,6 +9,8 @@
 #include "Class.h"
 #include "GetNewHaskellData.h"
 #include "Selector.h"
+
+#define DO_LOG 0
 
 /*
     Why don't we use normal Objective-C messaging?
@@ -24,6 +27,10 @@ static SEL selGetHaskellData = 0;
 
 void *getNewHaskellDataForClass(id obj, Class isa)
 {
+    #if DO_LOG
+    printf("getNewHaskellDataForClass(%p, %p)\n", (void *) obj, (void *) isa);
+    #endif
+    
     struct objc_method *m;
 
     IMP imp = 0;
@@ -65,5 +72,9 @@ void *getNewHaskellDataForClass(id obj, Class isa)
 
 void *getNewHaskellData(id obj)
 {
+    #if DO_LOG
+    printf("getNewHaskellData(%p)\n", (void *) obj);
+    #endif
+    
     return getNewHaskellDataForClass(obj, getClassForObject(obj));
 }
