@@ -82,4 +82,4 @@ setHaskellReleaseMethod methodList idx super =
     setMethodInList methodList idx releaseSelector "v@:" releaseCif (haskellObject_release_IMP super)
 
 setHaskellDataMethod methodList idx super mbDat = 
-    setMethodInList methodList idx getHaskellDataSelector "^v@:#" getHaskellDataCif (getHaskellData_IMP super mbDat)
+    setMethodInList methodList idx getHaskellDataSelector "^v@:" getHaskellDataCif (getHaskellData_IMP super mbDat)
