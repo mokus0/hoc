@@ -52,11 +52,13 @@ Library
         include-dirs: /usr/include/ffi
         frameworks: Foundation
         cpp-options: -DMACOSX
+        cc-options:  -DMACOSX
     else
         -- paths are inserted by Setup.hs
         extra-libraries: gnustep-base
         cpp-options: -DGNUSTEP
-        cc-options: -fobjc-exceptions
+        cc-options: -DGNUSTEP
+                    -fobjc-exceptions
                     -D_NATIVE_OBJC_EXCEPTIONS=1
     
     if flag(Trace)

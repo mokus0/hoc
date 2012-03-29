@@ -91,7 +91,7 @@ customConfig pdbi cf = do
             gcclibdir       <- getGccLibDir
             system_headers  <- getGNUstepVar "GNUSTEP_SYSTEM_HEADERS"
             system_libs     <- getGNUstepVar "GNUSTEP_SYSTEM_LIBRARIES"
-            writeFile "HOC.buildinfo" $ unlines [
+            writeFile "HOC-cbits.buildinfo" $ unlines [
                 "extra-lib-dirs: " ++ gcclibdir ++ ", " ++ system_libs,
                 "include-dirs: " ++ system_headers ]
 
