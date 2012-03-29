@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -fwarn-unused-binds -fwarn-unused-imports #-}
 module Main (main) where
+import Control.Applicative
 import Distribution.Simple
 import Distribution.PackageDescription
 import Distribution.Simple.Setup
@@ -7,7 +8,6 @@ import Distribution.Simple.Configure
 import Distribution.Simple.LocalBuildInfo
 import System.Exit( ExitCode(..) )
 import System.FilePath
-import System.IO
 import System.Process
 import qualified System.Info
 
@@ -43,30 +43,21 @@ objC2Available
         result <- system "grep -qR /usr/include/objc -e objc_allocateClassPair"
         return (result == ExitSuccess)
 
-backquote :: String -> IO String
-backquote cmd = do
-    (inp,out,err,pid) <- runInteractiveCommand cmd
-    hClose inp
-    text <- hGetContents out
-    waitForProcess pid
-    hClose err
-    return $ init text ++ let c = last text in if c == '\n' then [] else [c]
+-- run a command and capture its output, dropping the terminal LF
+backquote :: String -> [String] -> IO String
+backquote cmd args = trim <$> readProcess cmd args ""
 
-gnustepPaths :: IO (String, String, String)
-gnustepPaths = do
-    libgcc <- backquote "gcc --print-libgcc-file-name"
-    headersAndLibraries <- backquote
-            "opentool /bin/sh -c \
-            \'. $GNUSTEP_MAKEFILES/filesystem.sh \
-            \; echo $GNUSTEP_SYSTEM_HEADERS ; echo $GNUSTEP_SYSTEM_LIBRARIES'"
+-- drop terminal LF if there is one
+trim :: String -> String
+trim ""     = ""
+trim "\n"   = ""
+trim (c:cs) = c : trim cs
 
-    let gcclibdir =  takeDirectory libgcc
+getGccLibDir :: IO String
+getGccLibDir = takeDirectory <$> backquote "gcc" ["--print-libgcc-file-name"]
 
-    let system_headers : system_libs : _ = lines headersAndLibraries    
-    -- sysroot <- getEnv "GNUSTEP_SYSTEM_ROOT"
-    -- let system_headers = gnustepsysroot </> "Library/Headers"
-    --    system_libs = gnustepsysroot </> "Library/Libraries"
-    return (gcclibdir, system_libs, system_headers)
+getGNUstepVar :: String -> IO String
+getGNUstepVar var = backquote "gnustep-config" ["--variable=" ++ var]
 
 customConfig :: (GenericPackageDescription, HookedBuildInfo) -> ConfigFlags -> IO LocalBuildInfo
 customConfig pdbi cf = do
@@ -76,7 +67,9 @@ customConfig pdbi cf = do
     if System.Info.os == "darwin"
         then return()
         else do
-            (gcclibdir, system_libs, system_headers) <- gnustepPaths
+            gcclibdir       <- getGccLibDir
+            system_headers  <- getGNUstepVar "GNUSTEP_SYSTEM_HEADERS"
+            system_libs     <- getGNUstepVar "GNUSTEP_SYSTEM_LIBRARIES"
             writeFile "HOC.buildinfo" $ unlines [
                 "extra-lib-dirs: " ++ gcclibdir ++ ", " ++ system_libs,
                 "include-dirs: " ++ system_headers ]
