@@ -62,11 +62,7 @@ superSendMessageWithoutRetval = sndMsgSuperCommon callWithoutRetval
 
 #else
 
-withMarshalledDummy :: ObjCArgument a b => (b -> IO a) -> IO a
-withMarshalledDummy action = action undefined
-
 objSendMessageWithRetval cif args =
-    withMarshalledDummy $ \dummy ->
     cifIsStret cif >>= \isStret ->
     callWithRetval cif (if isStret /= 0
                                 then objc_msgSend_stretPtr
@@ -77,7 +73,6 @@ objSendMessageWithoutRetval cif args =
 
 
 superSendMessageWithRetval cif args =
-    withMarshalledDummy $ \dummy ->
     cifIsStret cif >>= \isStret ->
     callWithRetval cif (if isStret /= 0
                                 then objc_msgSendSuper_stretPtr
