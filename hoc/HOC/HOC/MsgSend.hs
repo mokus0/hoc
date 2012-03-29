@@ -47,14 +47,13 @@ sndMsgSuperCommon call cif args = do
     super <- peek (castPtr arg0Ptr)
     object <- peek (castPtr super)
     poke (castPtr arg0Ptr) (object :: Ptr ObjCObject)
-
+    
     selector <- peekElemOff args 1 >>= peek . castPtr
-
+    
     imp <- objc_msg_lookup_super super selector
-
+    
     call cif imp args
 
-    
 objSendMessageWithRetval      = sndMsgCommon      callWithRetval
 objSendMessageWithoutRetval   = sndMsgCommon      callWithoutRetval
 superSendMessageWithRetval    = sndMsgSuperCommon callWithRetval
@@ -62,21 +61,20 @@ superSendMessageWithoutRetval = sndMsgSuperCommon callWithoutRetval
 
 #else
 
-objSendMessageWithRetval cif args =
-    cifIsStret cif >>= \isStret ->
-    callWithRetval cif (if isStret /= 0
-                                then objc_msgSend_stretPtr
-                                else objc_msgSendPtr) args       
+ifStret cif t f = do
+    isStret <- cifIsStret cif
+    return $! if isStret /= 0 then t else f
+
+objSendMessageWithRetval cif args = do
+    msgSend <- ifStret cif objc_msgSend_stretPtr objc_msgSendPtr
+    callWithRetval cif msgSend args
 
 objSendMessageWithoutRetval cif args =
     callWithoutRetval cif objc_msgSendPtr args
 
-
-superSendMessageWithRetval cif args =
-    cifIsStret cif >>= \isStret ->
-    callWithRetval cif (if isStret /= 0
-                                then objc_msgSendSuper_stretPtr
-                                else objc_msgSendSuperPtr) args      
+superSendMessageWithRetval cif args = do
+    msgSend <- ifStret cif objc_msgSendSuper_stretPtr objc_msgSendSuperPtr
+    callWithRetval cif msgSend args
 
 superSendMessageWithoutRetval cif args =
     callWithoutRetval cif objc_msgSendSuperPtr args
