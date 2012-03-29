@@ -69,7 +69,7 @@ void newClass(Class super_class,
     #else
     new_class = objc_allocateClassPair(super_class, name);
     #endif
-    meta_class = getClassForObject(new_class);
+    meta_class = object_getClass(new_class);
 	
     #if DO_LOG
     printf("    new_class = %p, meta_class = %p\n", new_class, meta_class);

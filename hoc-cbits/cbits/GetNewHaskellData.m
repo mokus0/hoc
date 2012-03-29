@@ -3,7 +3,6 @@
 #include "Common.h"
 #include "Class.h"
 #include "GetNewHaskellData.h"
-#include "Selector.h"
 
 #include "Log.h"
 
@@ -34,20 +33,21 @@ void *getNewHaskellDataForClass(id obj, Class isa)
         return 0;
 
     if(!selGetHaskellData)
-        selGetHaskellData = getSelectorForName("__getHaskellData__");
+        selGetHaskellData = sel_registerName("__getHaskellData__");
     
-#ifdef GNUSTEP
-        // first, use objc_msg_lookup to make sure
-        // that the objc runtime has inited everything
-    objc_msg_lookup(obj, selGetHaskellData);
+// #ifdef GNUSTEP
+//         // first, use objc_msg_lookup to make sure
+//         // that the objc runtime has inited everything
+//         // TODO: find out whether this is really necessary (it doesn't seem to be), 
+//         //  and if so figure out a way to achieve the same goal without spewing 
+//         //  warnings all over the console.
+//     objc_msg_lookup(obj, selGetHaskellData);
+// #endif
     
         // Now find the right method.
         // We don't want to use objc_msg_lookup_super because 
         // we don't want our message to be forwarded.
-    m = class_get_instance_method(isa, selGetHaskellData);
-#else
     m = class_getInstanceMethod(isa, selGetHaskellData);
-#endif
 
     if(m)
         imp = method_getImplementation(m);
@@ -65,5 +65,5 @@ void *getNewHaskellData(id obj)
     printf("getNewHaskellData(%p)\n", (void *) obj);
     #endif
     
-    return getNewHaskellDataForClass(obj, getClassForObject(obj));
+    return getNewHaskellDataForClass(obj, object_getClass(obj));
 }

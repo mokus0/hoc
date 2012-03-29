@@ -40,7 +40,6 @@ Library
                cbits/NewClass.m
                cbits/ObjectMap.m
                cbits/RetainedHaskellPart.m
-               cbits/Selector.m
                cbits/Statistics.m
                 
     extra-libraries: objc, ffi

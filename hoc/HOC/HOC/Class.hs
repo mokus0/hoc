@@ -15,7 +15,7 @@ import System.IO.Unsafe (unsafePerformIO)
 
 unsafeGetClassObject :: String -> Class a
 
-getClassByName name = withCString name c_getClassByName
+getClassByName name = withCString name objc_getClass
 
      -- called from generated code, save space:
 {-# NOINLINE unsafeGetClassObject #-}
@@ -27,7 +27,7 @@ unsafeGetRawClassObject name = unsafePerformIO $
     getClassByName name
 
 
-getClassForObject obj = withExportedArgument obj c_getClassForObject
+getClassForObject obj = withExportedArgument obj object_getClass
 
 
 class (Object a, Object b) => ClassAndObject a b | a -> b, b -> a
@@ -44,7 +44,7 @@ class Object a => RawStaticClass a where
 instance RawStaticClass (ID a) => RawStaticClass (Class a) where
     rawStaticClassForObject cls = 
         unsafePerformIO $
-            c_getClassForObject (rawStaticClassForObject $ objdummy cls)
+            object_getClass (rawStaticClassForObject $ objdummy cls)
         where
             objdummy :: Class a -> ID a
             objdummy = undefined

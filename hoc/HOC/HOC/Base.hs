@@ -9,7 +9,7 @@ import System.IO.Unsafe (unsafePerformIO)
 
 getSelectorForName :: String -> SEL
 getSelectorForName str = unsafePerformIO $
-    withCString str (c_getSelectorForName)
+    withCString str sel_registerName
 
 withAutoreleasePool :: IO a -> IO a
 withAutoreleasePool action = bracket newAutoreleasePool releaseObject (const action)

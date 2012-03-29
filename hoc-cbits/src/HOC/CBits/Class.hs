@@ -5,9 +5,6 @@ import HOC.CBits.Types
 import Foreign.C
 import Foreign.Ptr
 
-foreign import ccall unsafe "Class.h getClassByName"
-    c_getClassByName :: CString -> IO (Ptr ObjCObject)
-
-foreign import ccall unsafe "Class.h getClassForObject"
-    c_getClassForObject :: Ptr ObjCObject -> IO (Ptr ObjCObject)
+foreign import ccall unsafe objc_getClass   :: CString        -> IO (Ptr ObjCObject)
+foreign import ccall unsafe object_getClass :: Ptr ObjCObject -> IO (Ptr ObjCObject)
 

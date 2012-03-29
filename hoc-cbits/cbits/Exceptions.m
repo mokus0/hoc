@@ -3,7 +3,6 @@
 #include "Class.h"
 #include "Ivars.h"
 #include "Methods.h"
-#include "Selector.h"
 #include "Marshalling.h"
 #include "HsFFI.h"
 
@@ -46,22 +45,22 @@ static void initExceptionWrapper()
         struct hoc_ivar_list *ivars = makeIvarList(1);
         struct objc_ivar *stablePtrIvar;
         
-        selDealloc = getSelectorForName("dealloc");
+        selDealloc = sel_registerName("dealloc");
         
         setMethodInListWithIMP(methods, 0, selDealloc, "v@:", (IMP) &exc_dealloc);
         
         setIvarInList(ivars, 0, hsExceptionIvarName, "^v", sizeof(void *), IVAR_PTR_ALIGN);
       
-        newClass(getClassByName("NSException"),
+        newClass(objc_getClass("NSException"),
                 hsExceptionClassName,
                 ivars, methods, class_methods);
         
-        clsHOCHaskellException = getClassByName("HOCHaskellException");
+        clsHOCHaskellException = objc_getClass("HOCHaskellException");
         
         stablePtrIvar = class_getInstanceVariable(clsHOCHaskellException, hsExceptionIvarName);
         stablePtrOffset = ivar_getOffset(stablePtrIvar);
         
-        selExceptionWithNameReasonUserInfo = getSelectorForName("exceptionWithName:reason:userInfo:");
+        selExceptionWithNameReasonUserInfo = sel_registerName("exceptionWithName:reason:userInfo:");
                 
         excWrapperInited = YES;
     }
@@ -82,7 +81,7 @@ id wrapHaskellException(char *name, HsStablePtr hexc)
 
 HsStablePtr unwrapHaskellException(id cexc)
 {
-    if(getClassForObject(cexc) == clsHOCHaskellException)
+    if(object_getClass(cexc) == clsHOCHaskellException)
     {
         return *(HsStablePtr*) (((char*)cexc) + stablePtrOffset);
     }

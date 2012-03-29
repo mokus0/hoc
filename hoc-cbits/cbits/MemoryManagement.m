@@ -5,7 +5,6 @@
 #include "Class.h"
 #include "Log.h"
 #include "MemoryManagement.h"
-#include "Selector.h"
 
 void retainObject(id obj)
 {
@@ -56,7 +55,7 @@ static SEL selRelease = 0;
 void retainSuper(id obj, Class cls)
 {
     if(!selRetain)
-        selRetain = getSelectorForName("retain");
+        selRetain = sel_registerName("retain");
     
 #if DO_LOG
     printf("retain super %p, %p\n",obj,cls);
@@ -80,7 +79,7 @@ void retainSuper(id obj, Class cls)
 void releaseSuper(id obj, Class cls)
 {
     if(!selRelease)
-        selRelease = getSelectorForName("release");
+        selRelease = sel_registerName("release");
     
 #if DO_LOG
     printf("release super %p, %p\n",obj,cls);
