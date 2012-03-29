@@ -7,12 +7,6 @@
 #include "Methods.h"
 #include "NewClass.h"
 
-#ifdef GNUSTEP
-#define isa class_pointer
-#define CLS_CLASS _CLS_CLASS
-#define CLS_META _CLS_META
-#endif
-
 static void addIvarsToClass(Class new_class, struct hoc_ivar_list *ivars)
 {
     int i;
@@ -64,11 +58,7 @@ void newClass(Class super_class,
     #endif
     
 	/* Allocate the class and metaclass */
-    #ifdef GNUSTEP
     new_class = objc_allocateClassPair(super_class, name, 0);
-    #else
-    new_class = objc_allocateClassPair(super_class, name);
-    #endif
     meta_class = object_getClass(new_class);
 	
     #if DO_LOG
