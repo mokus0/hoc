@@ -2,5 +2,5 @@
 
 Class getSuperClassForObject(id self)
 {
-    return object_getClass(self)->super_class;
+    return class_getSuperclass(object_getClass(self));
 }
