@@ -3,8 +3,7 @@ version: 1.0
 license: BSD4
 license-file: LICENSE
 cabal-version: >= 1.9.2
-build-type: Custom
-extra-tmp-files: HOC.buildinfo
+build-type: Simple
 
 Flag BinaryInterfaces
     description: write HOC interface generator files in binary format
@@ -53,19 +52,10 @@ Library
         HOC.CStruct
 
     hs-source-dirs: HOC
-                
-    extra-libraries: objc, ffi
-
     if os(darwin)
-        include-dirs: /usr/include/ffi
-        frameworks: Foundation
         cpp-options: -DMACOSX
     else
-        -- paths are inserted by Setup.hs
-        extra-libraries: gnustep-base
         cpp-options: -DGNUSTEP
-        cc-options: -fobjc-exceptions
-                    -D_NATIVE_OBJC_EXCEPTIONS=1
 
 Executable hoc-ifgen
     main-is: Main.hs
@@ -104,10 +94,7 @@ Test-Suite hoc-test
                         th-extras,
                         unix
 
-    extra-libraries: objc, ffi
     if os(darwin)
-        frameworks: Foundation
         cpp-options: -DMACOSX
     else
-        extra-libraries: gnustep-base
         cpp-options: -DGNUSTEP
