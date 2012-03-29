@@ -6,6 +6,7 @@ import Distribution.PackageDescription
 import Distribution.Simple.Setup
 import Distribution.Simple.Configure
 import Distribution.Simple.LocalBuildInfo
+import System.Directory
 import System.Exit( ExitCode(..) )
 import System.FilePath
 import System.Process
@@ -56,8 +57,28 @@ trim (c:cs) = c : trim cs
 getGccLibDir :: IO String
 getGccLibDir = takeDirectory <$> backquote "gcc" ["--print-libgcc-file-name"]
 
+findGNUstepConfig :: IO String
+findGNUstepConfig = findExecutable "gnustep-config" >>= search dirs
+    where
+        search _ (Just bin) = return bin
+        search [] _         = fail "Can't find gnustep-config command"
+        search (dir:dirs) _ = check dir >>= search dirs
+        
+        check dir = do
+            let file = dir </> "gnustep-config"
+            exists <- doesFileExist file
+            return (if exists then Just file else Nothing)
+        
+        dirs = 
+            [ base </> sub </> "GNUstep/System/Tools" 
+            | base <- ["/usr", "/opt"]
+            , sub  <- ["", "local"]
+            ]
+
 getGNUstepVar :: String -> IO String
-getGNUstepVar var = backquote "gnustep-config" ["--variable=" ++ var]
+getGNUstepVar var = do
+    bin <- findGNUstepConfig
+    backquote bin ["--variable=" ++ var]
 
 customConfig :: (GenericPackageDescription, HookedBuildInfo) -> ConfigFlags -> IO LocalBuildInfo
 customConfig pdbi cf = do
