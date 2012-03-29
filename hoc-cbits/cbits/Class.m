@@ -1,8 +1,4 @@
-#ifdef GNUSTEP
-#include <objc/objc-api.h>
-#else
-#include <objc/objc-runtime.h>
-#endif
+#include "Common.h"
 #include "Selector.h"
 
 id getClassByName(const char* name)
@@ -21,11 +17,8 @@ Class getSuperclassForClass(Class class)
         return class->super_class;
     else
         return getClassByName((const char*) class->super_class);
-        
-#elif defined(__OBJC2__)
-    return class_getSuperclass(class);
 #else
-    return class->super_class;
+    return class_getSuperclass(class);
 #endif
 }
 
@@ -45,10 +38,8 @@ Class getClassForObject(id object)
 {
 #ifdef GNUSTEP
     return object->class_pointer;
-#elif defined(__OBJC2__)
-    return object_getClass(object);
 #else
-    return object->isa;
+    return object_getClass(object);
 #endif
 }
 
@@ -56,8 +47,6 @@ Class getSuperClassForObject(id self)
 {
 #ifdef GNUSTEP
     return self->class_pointer->super_class;
-#elif defined(__OBJC2__)
-    return class_getSuperclass(object_getClass(self));
 #else
     return self->isa->super_class;
 #endif

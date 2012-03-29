@@ -1,4 +1,4 @@
-#import "Log.h"
+#import "Common.h"
 #import "Statistics.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -7,7 +7,7 @@
 
 #ifdef DO_TIMINGS
 
-#if !GNUSTEP
+#ifndef GNUSTEP
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 
@@ -52,8 +52,10 @@ void recordHOCEvent(int what, void ** args)
             break;
         case kHOCEnteredHaskell: 
             time = tonano(abstime() - saved);
-//            if(time > 100000)
-//                printf("Took a long time to enter: %g\n", time);
+            #ifdef DO_LOG
+            if(time > 100000)
+                printf("Took a long time to enter: %g\n", time);
+            #endif
             if(enteringTime != 0)
                 enteringTime = (1-weight) * enteringTime + weight * time;
             else
@@ -62,8 +64,10 @@ void recordHOCEvent(int what, void ** args)
             break;
         case kHOCImportedArguments: 
             time = tonano(abstime() - saved);
-//            if(time > 100000)
-//                printf("Took a long time to import: %g\n", time);
+            #ifdef DO_LOG
+            if(time > 100000)
+                printf("Took a long time to import: %g\n", time);
+            #endif
             if(importTime != 0)
                 importTime = (1-weight) * importTime + weight * time;
             else

@@ -2,6 +2,7 @@
 #import <Foundation/NSString.h>
 #include <ffi.h>
 
+#include "Common.h"
 #include "Invocation.h"
 
 

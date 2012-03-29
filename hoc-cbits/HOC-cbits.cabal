@@ -9,9 +9,6 @@ Flag Trace
     default: False
     description: print trace messages to console from low-level code
 
-Flag ObjC2
-    description: build for Objective-C 2.0
-
 Library
     build-depends: base >= 4
     hs-source-dirs: src
@@ -64,7 +61,3 @@ Library
     if flag(Trace)
         cpp-options: -DDO_LOG=1
         cc-options:  -DDO_LOG=1
-    
-    if flag(ObjC2)
-        cpp-options: -D__OBJC2__=1
-        cc-options:  -D__OBJC2__=1

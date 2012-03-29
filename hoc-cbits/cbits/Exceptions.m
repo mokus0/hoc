@@ -1,4 +1,4 @@
-#include <objc/objc.h>
+#include "Common.h"
 #include "NewClass.h"
 #include "Class.h"
 #include "Ivars.h"
@@ -28,15 +28,10 @@ static void exc_dealloc(id self, SEL sel)
     super.self = self;
     super.class = getSuperClassForObject(self);
     
-    (*objc_msg_lookup_super(&super, selDealloc))(self, selDealloc);
+    objc_msg_lookup_super(&super, selDealloc)(self, selDealloc);
 #else
     super.receiver = self;
-    
-#   ifdef __OBJC2__
-        super.super_class = getSuperClassForObject(self);
-#   else
-        super.class = getSuperClassForObject(self);
-#   endif
+    super.super_class = getSuperClassForObject(self);
 
     objc_msgSendSuper(&super, selDealloc);
 #endif
@@ -64,11 +59,7 @@ static void initExceptionWrapper()
         clsHOCHaskellException = getClassByName("HOCHaskellException");
         
         stablePtrIvar = class_getInstanceVariable(clsHOCHaskellException, hsExceptionIvarName);
-#ifdef __OBJC2__
         stablePtrOffset = ivar_getOffset(stablePtrIvar);
-#else
-        stablePtrOffset = stablePtrIvar->ivar_offset;
-#endif
         
         selExceptionWithNameReasonUserInfo = getSelectorForName("exceptionWithName:reason:userInfo:");
                 
@@ -78,26 +69,13 @@ static void initExceptionWrapper()
 
 id wrapHaskellException(char *name, HsStablePtr hexc)
 {
-    id cexc;
-
-#if GNUSTEP
-    id (*imp)(id, SEL, id, NSString*, NSString*);
-    
     initExceptionWrapper();
-
-    imp = (void*) objc_msg_lookup(clsHOCHaskellException, selExceptionWithNameReasonUserInfo);
     
-    cexc = (*imp)(clsHOCHaskellException, selExceptionWithNameReasonUserInfo,
-                  utf8ToNSString("HaskellException"), utf8ToNSString(name), nil);
-#else
-    initExceptionWrapper();
-
-    cexc = objc_msgSend(clsHOCHaskellException, selExceptionWithNameReasonUserInfo,
-                        utf8ToNSString("HaskellException"), utf8ToNSString(name), nil);
-#endif
+    id cexc = objc_msgSend(clsHOCHaskellException, selExceptionWithNameReasonUserInfo,
+                           utf8ToNSString("HaskellException"), utf8ToNSString(name), nil);
     
+    // TODO: use proper function to get ivar
     * (HsStablePtr*) (((char*)cexc) + stablePtrOffset) = hexc;
-    
     
     return cexc;
 }

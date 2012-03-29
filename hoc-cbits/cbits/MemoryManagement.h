@@ -1,10 +1,9 @@
-#include <objc/objc.h>
+#ifndef __MemoryManagement_h__
+#define __MemoryManagement_h__
 
-#ifdef __OBJC__
+#include "Common.h"
+
 @class NSAutoreleasePool;
-#else
-typedef void NSAutoreleasePool;
-#endif
 
 void retainObject(id obj);
 void releaseObject(id obj);
@@ -20,3 +19,5 @@ NSAutoreleasePool *newAutoreleasePool();
 
 void releaseObjectWithPool(id obj);
 void deallocObjectWithPool(id obj);
+
+#endif /* __MemoryManagement_h__ */

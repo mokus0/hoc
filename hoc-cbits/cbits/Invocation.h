@@ -1,10 +1,11 @@
+#ifndef __Invocation_h__
+#define __Invocation_h__
+
 #include <ffi.h>
 
-#ifdef __OBJC__
 @class NSException;
-#else
-typedef void NSException;
-#endif
 
 NSException *callWithExceptions(ffi_cif *cif, void (*fn)(),
                                 void *rvalue, void **avalue);
+
+#endif /* __Invocation_h__ */

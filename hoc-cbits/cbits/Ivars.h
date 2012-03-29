@@ -1,10 +1,12 @@
+#ifndef __Ivars_h__
+#define __Ivars_h__
+
 #include <stdlib.h>
 #include <stdint.h>
 
-#ifdef GNUSTEP
-struct objc_ivar *
-class_getInstanceVariable(Class cls, const char *name);
+#include "Common.h"
 
+#ifdef GNUSTEP
 struct objc_ivar *
 object_getInstanceVariable(id obj, const char *name, void** out);
 
@@ -39,12 +41,4 @@ void setIvarInList(
         uint8_t alignment
     );
 
-#ifndef __OBJC2__
-
-struct objc_ivar_list * buildIndexedIvarList(
-        struct hoc_ivar_list *list,
-        int start_offset,
-        int *instance_size      /* out */
-    );
-
-#endif
+#endif /* __Ivars_h__ */

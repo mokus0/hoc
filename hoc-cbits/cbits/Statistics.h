@@ -1,4 +1,5 @@
-#include <objc/objc.h>
+#ifndef __Statistics_h__
+#define __Statistics_h__
 
 enum
 {
@@ -11,3 +12,4 @@ enum
 };
 void recordHOCEvent(int what, void ** args);
 
+#endif /* __Statistics_h__ */

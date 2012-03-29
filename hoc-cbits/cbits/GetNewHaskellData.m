@@ -1,10 +1,6 @@
 #include <stdlib.h>
-#ifdef GNUSTEP
-#include <objc/objc-api.h>
-#else
-#include <objc/objc-runtime.h>
-#endif
 
+#include "Common.h"
 #include "Class.h"
 #include "GetNewHaskellData.h"
 #include "Selector.h"
@@ -54,13 +50,7 @@ void *getNewHaskellDataForClass(id obj, Class isa)
 #endif
 
     if(m)
-    {
-#ifdef __OBJC2__
         imp = method_getImplementation(m);
-#else
-        imp = m->method_imp;
-#endif
-    }
     
     if(imp)
         return (*(getHaskellDataIMP)imp)(obj, selGetHaskellData);

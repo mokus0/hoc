@@ -1,16 +1,10 @@
-#ifdef GNUSTEP
-#include <objc/objc-api.h>
-#else
-#include <objc/objc-runtime.h>
-#endif
+#ifndef __Methods_h__
+#define __Methods_h__
 
 #include <ffi.h>
+#include "Common.h"
 
-#ifdef __OBJC__
 @class NSException;
-#else
-typedef void NSException;
-#endif
 
 typedef NSException *(*haskellIMP)(
                         ffi_cif *cif,
@@ -50,8 +44,4 @@ void setMethodInList(
         haskellIMP imp
     );
 
-#ifndef __OBJC2__
-
-struct objc_method_list * convertMethodList(struct hoc_method_list * list);
-
-#endif
+#endif /* __Methods_h__ */
