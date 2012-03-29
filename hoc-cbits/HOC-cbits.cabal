@@ -4,6 +4,7 @@ license: BSD4
 license-file: LICENSE
 cabal-version: >= 1.2
 build-type: Custom
+build-depends: gnustep-config
 extra-tmp-files: HOC-cbits.buildinfo
 
 Flag Trace

@@ -25,6 +25,7 @@ import System.FilePath
 import Data.Graph.Inductive
 import Text.Parsec( getState )
 import qualified Data.Map as Map
+import qualified System.GNUstep.Config as GNUstep
 
 type ModuleName = ByteString
 data HeaderInfo = HeaderInfo ModuleName [ModuleName] ParsedHeader
@@ -66,7 +67,9 @@ headersForFramework prefix framework =
             let fwPath = prefix </> "System/Library/Frameworks" 
                                 </> (framework ++ ".framework")
             headersForFrameworkAt fwPath framework
-        else headersIn ("/usr/lib/GNUstep/System/Library/Headers/" ++ framework ++ "/") framework
+        else do
+            sysHeaders <- GNUstep.variable "GNUSTEP_SYSTEM_HEADERS"
+            headersIn (sysHeaders </> framework ++ "/") framework
 
 translateObjCImport imp = haskellizeModuleName $
                           map slashToDot $ takeWhile (/= '.') $ imp

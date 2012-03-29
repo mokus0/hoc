@@ -67,6 +67,7 @@ Executable hoc-ifgen
                         directory,
                         fgl,
                         filepath,
+                        gnustep-config,
                         mtl,
                         old-time,
                         parsec >= 3.0,
