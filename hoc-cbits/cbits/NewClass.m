@@ -69,8 +69,6 @@ void newClass(Class super_class,
     addIvarsToClass(new_class, ivars);
     
     /* Add methods and class methods */
-    /* I don't know whether order actually matters here in the non-objc2 cases,
-       so I'm leaving it as it was. */
     addMethodsToClass(new_class, methods);
     addMethodsToClass(meta_class, class_methods);
     
