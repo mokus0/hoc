@@ -368,6 +368,13 @@ tests = test [
                 let rect = NSRect (NSPoint 1 2) (NSSize 3 4)
                 result <- _NSValue # valueWithRect rect >>= rectValue
                 result @?= rect
+            ),
+            "range" ~: (do
+                let range = NSRange 25 3
+                homebrew <- nsString "Imperial India Pale Ale (IPA)"
+                ipa      <- nsString "IPA"
+                result <- homebrew # rangeOfString ipa
+                result @?= range
             )
         ],
         "externConstant" ~: (

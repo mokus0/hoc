@@ -23,6 +23,7 @@ $(declareClass "NSDictionary" "NSObject")
 $(declareCStructWithTag "NSPoint" (Prelude.Just "_NSPoint") [[t| Double |],[t| Double |]])
 $(declareCStructWithTag "NSSize" (Prelude.Just "_NSSize") [[t| Double |],[t| Double |]])
 $(declareCStructWithTag "NSRect" (Prelude.Just "_NSRect") [[t| NSPoint |],[t| NSSize |]])
+$(declareCStructWithTag "NSRange" (Prelude.Just "_NSRange") [[t| CULong |],[t| CULong |]])
 
 -- NSObject selectors
 $(declareSelector "description" [t| IO (NSString ()) |])
@@ -36,9 +37,11 @@ instance Has_alloc (NSObjectClass a)
 -- NSString selectors
 $(declareRenamedSelector "length" "nslength" [t| IO CUInt |])
 $(declareSelector "initWithContentsOfFile:" [t| forall a . NSString a -> IO Inited |])
+$(declareSelector "rangeOfString:" [t| NSString () -> IO NSRange |])
 
 instance Has_nslength (NSString a)
 instance Has_initWithContentsOfFile (NSString a)
+instance Has_rangeOfString (NSString a)
 
 -- NSValue selectors
 
@@ -125,6 +128,7 @@ instance Has_objectAtIndex (NSMutableArray a)
 deriving instance Show NSRect
 deriving instance Show NSPoint
 deriving instance Show NSSize
+deriving instance Show NSRange
 
 haskellString :: NSString a -> IO String
 nsString :: String -> IO (NSString ())
