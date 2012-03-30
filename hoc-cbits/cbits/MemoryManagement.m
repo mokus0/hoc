@@ -96,6 +96,6 @@ void releaseSuper(id obj, Class cls)
     super.receiver = obj;
     super.super_class = cls;
     
-    objc_msgSendSuper(&super, selRetain);
+    objc_msgSendSuper(&super, selRelease);
 #endif
 }
