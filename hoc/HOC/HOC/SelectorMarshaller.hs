@@ -114,7 +114,7 @@ makeMarshaller maybeInfoName haskellName nArgs isUnit isPure isRetained =
         purify e | isPure = [| unsafePerformIO $(e) |]
                  | otherwise = e
                  
-        releaseRetvalIfRetained e | isRetained = [| $(e) >>= releaseExtraReference |]
+        releaseRetvalIfRetained e | isRetained = [| $e >>= releaseExtraReference |]
                                   | otherwise = e
                                   
         checkTargetNil e = [| failNilMessage $(varE $ mkName "target")

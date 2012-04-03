@@ -1,4 +1,4 @@
-{-# LANGUAGE ForeignFunctionInterface, RankNTypes #-}
+{-# LANGUAGE ForeignFunctionInterface, RankNTypes, TypeFamilies #-}
 module TestFFI where
 
 import HOC.FFICallInterface
@@ -23,10 +23,10 @@ fficallDirectly cif fp args
         peekRetval ret
 
 type Invoker = forall a b c d. 
-    (ObjCArgument a a, ObjCArgument b b) =>
+    (ObjCArgument a, ForeignArg a ~ a, ObjCArgument b, ForeignArg b ~ b) =>
     FFICif -> FunPtr (a -> b) -> Ptr (Ptr ()) -> IO b
 
-testArgAndResult :: (Eq a, Num a, Eq b, Show b, Num b, ObjCArgument a a, ObjCArgument b b)
+testArgAndResult :: (Eq a, Num a, Eq b, Show b, Num b, ObjCArgument a, ForeignArg a ~ a, ObjCArgument b, ForeignArg b ~ b)
                  => Invoker -> FunPtr (a -> b) -> IO ()
 
 

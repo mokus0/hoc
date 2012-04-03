@@ -13,7 +13,7 @@ import HOC.Invocation
 import Foreign
 
 objSendMessageWithRetval
-    :: ObjCArgument a b
+    :: ObjCArgument a
     => FFICif
     -> Ptr (Ptr ())
     -> IO a
@@ -24,7 +24,7 @@ objSendMessageWithoutRetval
     -> IO ()
 
 superSendMessageWithRetval
-    :: ObjCArgument a b
+    :: ObjCArgument a
     => FFICif
     -> Ptr (Ptr ())
     -> IO a

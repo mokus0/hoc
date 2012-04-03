@@ -14,20 +14,20 @@ declareCStruct :: String -> [TypeQ] -> Q [Dec]
 declareCStructWithTag :: String -> Maybe String -> [TypeQ] -> Q [Dec]
 
 
-mkRawThing :: ObjCArgument a b => a -> b
+mkRawThing :: ObjCArgument a => a -> ForeignArg a
 mkRawThing _ = undefined
 
-sizeMember :: ObjCArgument a b => a -> State Int ()
+sizeMember :: ObjCArgument a => a -> State Int ()
 sizeMember thing =
     modify (\offset -> align offset (alignment rawThing) + sizeOf rawThing)
 
     where align x a = (x + (a-1)) .&. complement (a-1)
           rawThing = mkRawThing thing
 
-alignMember :: ObjCArgument a b => a -> Int
+alignMember :: ObjCArgument a => a -> Int
 alignMember = alignment . mkRawThing
 
-pokeMember :: ObjCArgument a b => a -> StateT (Ptr c) IO ()
+pokeMember :: ObjCArgument a => a -> StateT (Ptr c) IO ()
 pokeMember thing = do
     rawThing <- lift $ exportArgument thing
     modify (`alignPtr` alignment rawThing)
@@ -35,7 +35,7 @@ pokeMember thing = do
     lift $ poke (castPtr p) rawThing
     modify (`plusPtr` sizeOf rawThing)
 
-peekMember :: ObjCArgument a b => StateT (Ptr c) IO a
+peekMember :: ObjCArgument a => StateT (Ptr c) IO a
 peekMember = (mfix $ \result -> do
     modify (`alignPtr` alignment result)
     p <- get
@@ -43,7 +43,7 @@ peekMember = (mfix $ \result -> do
     modify (`plusPtr` sizeOf rawThing)
     return rawThing) >>= \rawThing -> lift (importArgument rawThing)
     
-ffiMember :: ObjCArgument a b => a -> StateT [FFIType] IO ()
+ffiMember :: ObjCArgument a => a -> StateT [FFIType] IO ()
 ffiMember thing = do
     t <- lift $ makeFFIType (mkRawThing thing)
     modify (t :)
@@ -115,8 +115,7 @@ declareCStructWithTag cname mbTag fieldTypes
                 ]
             ]
     
-        argDecl <- instanceD (cxt []) (conT ''ObjCArgument `appT`
-                                        conT name `appT` conT name)
+        argDecl <- instanceD (cxt []) (conT ''ObjCArgument `appT` conT name)
             [
                 valD (varP 'exportArgument) (normalB [| return |]) [],
                 valD (varP 'importArgument) (normalB [| return |]) [],

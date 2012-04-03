@@ -1,4 +1,4 @@
-{-# LANGUAGE DoRec, MultiParamTypeClasses, FlexibleInstances, NPlusKPatterns #-}
+{-# LANGUAGE DoRec, TypeFamilies, FlexibleInstances, NPlusKPatterns #-}
 module HOC.ID where
 
 import HOC.Arguments
@@ -67,7 +67,8 @@ replaceRetainedHaskellPart self newHSO = do
             freeStablePtr oldHSO
         setRetainedHaskellPart self newHSO
 
-instance ObjCArgument (ID a) (Ptr ObjCObject) where
+instance ObjCArgument (ID a) where
+    type ForeignArg (ID a) = Ptr ObjCObject
     -- remember that thing may be lazy and never evaluated,
     -- including by "action"  Thus you must evaluate "thing"
     -- to ensure that the HSO object is properly allocated.
@@ -242,10 +243,6 @@ getHaskellData_IMP super mbDat cif ret args = do
     return nullPtr  -- no exception
 
 getHaskellDataForID (ID (HSO _ dat)) = dat
-
-releaseExtraReference obj
-    = withExportedArgument obj (\ptr -> when (ptr /= nullPtr) (releaseObject ptr))
-      >> return obj
 
 objectMapStatistics =
     alloca $ \pAllocated ->

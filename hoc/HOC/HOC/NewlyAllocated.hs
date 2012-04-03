@@ -1,5 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, UndecidableInstances,
-    ScopedTypeVariables #-}
+    ScopedTypeVariables, TypeFamilies #-}
 module HOC.NewlyAllocated where
 
 {-
@@ -27,7 +27,9 @@ data NewlyAllocated a
     = NewlyAllocated (Ptr ObjCObject)
     | NewSuper (Ptr ObjCObject) (Class ())
 
-instance ObjCArgument (NewlyAllocated a) (Ptr ObjCObject) where
+instance ObjCArgument (NewlyAllocated a) where
+    type ForeignArg (NewlyAllocated a) = Ptr ObjCObject
+    
     withExportedArgument (NewlyAllocated p) action = action p
     withExportedArgument (NewSuper p cls) action =
         withExportedArgument cls $ \cls ->

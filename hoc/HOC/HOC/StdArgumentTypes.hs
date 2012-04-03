@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell,
-             MultiParamTypeClasses, UndecidableInstances,
+             TypeFamilies, UndecidableInstances,
              TypeSynonymInstances, FlexibleInstances,
              ScopedTypeVariables #-}
 module HOC.StdArgumentTypes where
@@ -23,7 +23,8 @@ instance FFITypeable SEL where
 
 $(declareStorableObjCArgument [t| SEL |] ":")
 
-instance ObjCArgument Bool CSChar where
+instance ObjCArgument Bool where
+    type ForeignArg Bool = CSChar
     exportArgument False = return 0
     exportArgument True = return 1
     importArgument 0 = return False
@@ -35,8 +36,7 @@ $(declareStorableObjCArgument [t| Int |] "l")
 $(declareStorableObjCArgument [t| Float |] "f")
 $(declareStorableObjCArgument [t| Double |] "d")
 
-instance ObjCArgument a b =>
-         ObjCArgument (Ptr a) (Ptr a) where
+instance ObjCArgument a => ObjCArgument (Ptr a) where
     exportArgument a = return a
     importArgument a = return a
     objCTypeString _
@@ -69,7 +69,9 @@ $(declareStorableObjCArgument [t| CULLong |] "Q")
 
 withUTF8String str = withArray0 0 (unicodeToUtf8 str)
 
-instance ObjCArgument a (Ptr b) => ObjCArgument (Maybe a) (Ptr b) where
+instance (ObjCArgument a, ForeignArg a ~ Ptr b) => ObjCArgument (Maybe a) where
+    type ForeignArg (Maybe a) = ForeignArg a
+    
     withExportedArgument Nothing  action = action nullPtr
     withExportedArgument (Just x) action = withExportedArgument x action
     exportArgument Nothing  = return nullPtr
@@ -79,7 +81,9 @@ instance ObjCArgument a (Ptr b) => ObjCArgument (Maybe a) (Ptr b) where
         | otherwise     = fmap Just (importArgument p)
     objCTypeString _ = objCTypeString (undefined :: a)
 
-instance ObjCArgument String (Ptr ObjCObject) where
+instance ObjCArgument String where
+    type ForeignArg String = Ptr ObjCObject
+    
     withExportedArgument arg action =
         bracket (withUTF8String arg utf8ToNSString) releaseObject action
     exportArgument arg = do

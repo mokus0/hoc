@@ -1,6 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies,
              UndecidableInstances, FlexibleInstances,
-             FlexibleContexts #-}
+             FlexibleContexts, TypeFamilies #-}
 module HOC.Super(
         SuperClass, SuperTarget, Super(super), withExportedSuper, castSuper
     ) where
@@ -40,7 +40,8 @@ withExportedSuper p cls action =
     pokeSuper sptr p cls >> action sptr
 
 instance MessageTarget a
-        => ObjCArgument (SuperTarget a) (Ptr ObjCObject) where
+        => ObjCArgument (SuperTarget a) where
+    type ForeignArg (SuperTarget a) = Ptr ObjCObject
 
     withExportedArgument (SuperTarget obj cls) action =
         withExportedArgument obj $ \p ->

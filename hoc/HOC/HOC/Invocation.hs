@@ -15,7 +15,7 @@ callWithException cif fun ret args = do
     when (exception /= nullPtr) $
         exceptionObjCToHaskell exception
 
-withMarshalledArgument :: ObjCArgument a b => a -> (Ptr () -> IO c) -> IO c
+withMarshalledArgument :: ObjCArgument a => a -> (Ptr () -> IO c) -> IO c
 
 withMarshalledArgument arg act =
     withExportedArgument arg (\exported -> with exported (act . castPtr))
@@ -27,7 +27,7 @@ callWithoutRetval :: FFICif -> FunPtr a
 callWithoutRetval cif fun args = callWithException cif fun nullPtr args
 
 
-callWithRetval :: ObjCArgument b c
+callWithRetval :: ObjCArgument b
                => FFICif -> FunPtr a
                -> Ptr (Ptr ())
                -> IO b
@@ -38,12 +38,12 @@ callWithRetval cif fun args = do
         >> peekRetval retptr >>= importArgument
 
 
-setMarshalledRetval :: ObjCArgument a b => Bool -> Ptr () -> a -> IO ()
+setMarshalledRetval :: ObjCArgument a => Bool -> Ptr () -> a -> IO ()
 setMarshalledRetval retained ptr val =
     (if retained then exportArgumentRetained else exportArgument) val
         >>= poke (castPtr ptr)
 
-getMarshalledArgument :: ObjCArgument a b => Ptr (Ptr ()) -> Int -> IO a
+getMarshalledArgument :: ObjCArgument a => Ptr (Ptr ()) -> Int -> IO a
 getMarshalledArgument args idx = do
     p <- peekElemOff args idx
     arg <- peek (castPtr p)
