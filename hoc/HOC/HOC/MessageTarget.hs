@@ -7,7 +7,8 @@ import HOC.CBits
 import HOC.Arguments
 import HOC.ID
 import HOC.MsgSend
-import HOC.FFICallInterface(FFICif)
+import Foreign.LibFFI.Experimental
+import Foreign.ObjC
 import Foreign.Ptr
 
 class (ObjCArgument a, ForeignArg a ~ Ptr ObjCObject) => MessageTarget a where
@@ -15,12 +16,12 @@ class (ObjCArgument a, ForeignArg a ~ Ptr ObjCObject) => MessageTarget a where
     
     sendMessageWithRetval :: ObjCArgument ret
                           => a
-                          -> FFICif
+                          -> SomeCIF
                           -> Ptr (Ptr ())
                           -> IO ret
 
     sendMessageWithoutRetval :: a
-                             -> FFICif
+                             -> SomeCIF
                              -> Ptr (Ptr ())
                              -> IO ()
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE FlexibleContexts #-}
 module HOC.MsgSend(
         objSendMessageWithRetval,
         objSendMessageWithoutRetval,
@@ -7,30 +8,31 @@ module HOC.MsgSend(
     ) where
 
 import HOC.CBits
-import HOC.FFICallInterface
 import HOC.Arguments
 import HOC.Invocation
 import Foreign
+import Foreign.LibFFI.Experimental
+import Foreign.ObjC
 
 objSendMessageWithRetval
-    :: ObjCArgument a
-    => FFICif
+    :: ObjCArgument ret
+    => SomeCIF
     -> Ptr (Ptr ())
-    -> IO a
+    -> IO ret
 
 objSendMessageWithoutRetval
-    :: FFICif
+    :: SomeCIF
     -> Ptr (Ptr ())
     -> IO ()
 
 superSendMessageWithRetval
-    :: ObjCArgument a
-    => FFICif
+    :: ObjCArgument ret
+    => SomeCIF
     -> Ptr (Ptr ())
-    -> IO a
+    -> IO ret
 
 superSendMessageWithoutRetval
-    :: FFICif
+    :: SomeCIF
     -> Ptr (Ptr ())
     -> IO ()
 

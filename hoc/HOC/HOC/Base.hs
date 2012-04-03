@@ -4,6 +4,7 @@ import Control.Exception(bracket)
 import Foreign.C.String (withCString)
 import HOC.CBits
 import System.IO.Unsafe (unsafePerformIO)
+import Foreign.ObjC
 
 -- The SEL Type
 

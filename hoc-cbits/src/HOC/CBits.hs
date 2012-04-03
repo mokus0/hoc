@@ -4,6 +4,7 @@ module HOC.CBits
         
     , module HOC.CBits.Class
     , module HOC.CBits.Exceptions
+    , module HOC.CBits.FFICallInterface
     , module HOC.CBits.GetNewHaskellData
     , module HOC.CBits.Invocation
     , module HOC.CBits.Marshalling
@@ -19,6 +20,7 @@ module HOC.CBits
 
 import HOC.CBits.Class
 import HOC.CBits.Exceptions
+import HOC.CBits.FFICallInterface
 import HOC.CBits.GetNewHaskellData
 import HOC.CBits.Invocation
 import HOC.CBits.Marshalling

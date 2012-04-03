@@ -6,20 +6,17 @@ module HOC.StdArgumentTypes where
 
 import HOC.CBits
 import HOC.Arguments
-import HOC.FFICallInterface
 
 import Control.Exception        ( bracket )
 import Foreign
 import Foreign.C.Types
+import Foreign.ObjC             ( SEL )
 
 import HOC.Unicode
 
 -- Objective C
 
 -- ID: already defined 
-
-instance FFITypeable SEL where
-    makeFFIType _ = makeFFIType (undefined :: Ptr ())
 
 $(declareStorableObjCArgument [t| SEL |] ":")
 

@@ -9,7 +9,6 @@ module HOC (
         ClassObject,
         classObject,
         ( # ), ( #. ),
-        withExportedArray,
         castObject,
         declareClass,
         declareSelector,
@@ -54,8 +53,8 @@ module HOC (
         declareStorableObjCArgument,
         declareMarshalledObjectType,
         
-        FFITypeable(..),
-        makeStructType,
+        FFIType(..),
+        struct,
         
         WrappedNSException(..),
         
@@ -84,5 +83,6 @@ import HOC.ExternConstants
 import HOC.ExternFunctions
 import HOC.Selectors
 import HOC.Exception
-import HOC.FFICallInterface
 import HOC.CStruct
+import Foreign.ObjC
+import Foreign.LibFFI.Experimental

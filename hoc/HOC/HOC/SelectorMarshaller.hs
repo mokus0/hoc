@@ -12,10 +12,11 @@ import HOC.Base
 import HOC.CBits
 import HOC.ID
 import HOC.Invocation
-import HOC.FFICallInterface
 import HOC.MessageTarget
 
 import Foreign                      ( withArray )
+import Foreign.LibFFI.Experimental
+import Foreign.ObjC                 ( SEL )
 import System.IO.Unsafe             ( unsafePerformIO )
 import GHC.Base                     ( unpackCString# )
 
@@ -24,7 +25,7 @@ import HOC.TH
 data SelectorInfo = SelectorInfo {
         selectorInfoObjCName :: String,
         selectorInfoHaskellName :: String,
-        selectorInfoCif :: !FFICif,
+        selectorInfoCif :: !SomeCIF,
         selectorInfoSel :: !SEL,
         selectorInfoResultRetained :: !Bool
     }

@@ -12,7 +12,9 @@ Flag BinaryInterfaces
 Library
     build-depends:      base >= 4,
                         HOC-cbits == 1.0,
+                        libffi-experiments,
                         mtl,
+                        objc-ffi,
                         syb,
                         template-haskell,
                         th-extras,
@@ -86,9 +88,11 @@ Test-Suite hoc-test
     
     build-depends:      base >= 4,
                         containers,
+                        libffi-experiments,
                         HOC-cbits,
                         HUnit,
                         mtl,
+                        objc-ffi,
                         parsec >= 3,
                         syb,
                         template-haskell,

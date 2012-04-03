@@ -8,6 +8,7 @@ import HOC.Dyld
 import HOC.NameCaseChange
 
 import Foreign (withArray)
+import Foreign.LibFFI.Experimental (toSomeCIF)
 import System.IO.Unsafe
 
 declareExternFun :: String -> TypeQ -> Q [Dec]
@@ -46,7 +47,7 @@ declareExternFun name typeSigQ
     
             invoke | isUnit = [| callWithoutRetval $(varE cifN) $(varE ptrN)
                                                    $(varE $ mkName "args")|]
-                   | otherwise = [| callWithRetval $(varE cifN) $(varE ptrN)
+                   | otherwise = [| callWithRetval (toSomeCIF $(varE cifN)) $(varE ptrN)
                                                    $(varE $ mkName "args")|]
     
                 -- ### FIXME: Code Duplication from DeclareSelector.hs

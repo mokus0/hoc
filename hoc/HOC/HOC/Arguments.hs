@@ -2,9 +2,9 @@
              FlexibleContexts, ScopedTypeVariables #-}
 module HOC.Arguments where
 
-import HOC.FFICallInterface
-
+import Foreign.LibFFI.Experimental
 import Foreign.Storable
+import Foreign.ObjC
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import System.IO.Unsafe(unsafePerformIO)
@@ -16,7 +16,7 @@ import HOC.TH
 -- importArgument is the FFIType used when importing this type
 -- objCTypeString is the type string that should be used to identify this type 
 -- to the objective-c runtime.
-class (Storable (ForeignArg a), FFITypeable (ForeignArg a)) => ObjCArgument a where
+class RetType (ForeignArg a) => ObjCArgument a where
     type ForeignArg a
     type ForeignArg a = a
     
@@ -39,23 +39,11 @@ class (Storable (ForeignArg a), FFITypeable (ForeignArg a)) => ObjCArgument a wh
         importArgument = return 
 -}
 
--- like withArray, only tanks the ObjCArgument a b, and uses the ObjCArgument 
--- to translate a to b before constructing the array in the IO monad.
--- b is typable to Ptr b.
-withExportedArray :: ObjCArgument a => [a] -> (Ptr (ForeignArg a) -> IO c) -> IO c
-withExportedArray l a = withExportedList l $ \l' -> withArray l' a
-    where
-        withExportedList [] a = a []
-        withExportedList (x:xs) a
-            = withExportedArgument x $
-              \x' -> withExportedList xs $
-              \xs' -> a (x':xs')
-
 declareStorableObjCArgument :: TypeQ -> String -> Q [Dec]
 
 {- This is what we'd like to do.
 declareStorableObjCArgument ty str =
-    [d| instance ObjCArgument $(ty) $(ty) where
+    [d| instance ObjCArgument $(ty) where
             exportArgument = return
             importArgument = return
             objCTypeString = str
@@ -72,75 +60,33 @@ declareStorableObjCArgument ty str = do
             |]
     return [argInst]
 
-    -- to avoid overlapping instance ObjCIMPType (IO ()) below...
-data EvilDummyForUnit
-instance Storable EvilDummyForUnit where
-    sizeOf = undefined ; alignment = undefined ; peek = undefined ; poke = undefined
-instance FFITypeable EvilDummyForUnit where
-    makeFFIType _ = makeFFIType ()
 instance ObjCArgument () where
-    type ForeignArg () = EvilDummyForUnit
     exportArgument = undefined
     importArgument = undefined
     objCTypeString _ = "v"
 
--- This is the objective c method implementation type class.
--- objCImpGetArgsFFI get the FFIType of the arguments (as an array in the IO 
--- monad)
--- objCImpGetRetFFI does the same thing for the return type
-class ObjCIMPType a where
-    objCImpGetArgsFFI :: a -> IO [FFIType]
-    objCImpGetRetFFI :: a -> IO FFIType
-    
-    objCImpGetArgsString :: a -> [String]
-    objCImpGetRetString :: a -> String
-
--- This defines a ObjCArgument as an objective-c method implementation.  This 
--- is so that constant expressions can be used as implementations.
-instance ObjCArgument a => ObjCIMPType (IO a) where
-    objCImpGetArgsFFI _ = return []
-    objCImpGetRetFFI _ = makeFFIType (undefined :: ForeignArg a)
-
-    objCImpGetArgsString _ = []
-    objCImpGetRetString _ = objCTypeString (undefined :: a)
-
--- of course, a function, with the right types, is also an implementation type.
--- between this and the constant expression above, this will recursivly define
--- rank-n functions as ObjcIMPTypes (neat eh?)
-instance (ObjCArgument a, ObjCIMPType b) => ObjCIMPType (a -> b) where
-    objCImpGetArgsFFI _ = do
-        arg <- makeFFIType (undefined :: ForeignArg a)
-        rest <- objCImpGetArgsFFI (undefined :: b)
-        return (arg : rest)
-    objCImpGetRetFFI _ = objCImpGetRetFFI (undefined :: b)
-    
-    objCImpGetArgsString _ = objCTypeString (undefined :: a)
-                           : objCImpGetArgsString (undefined :: b)
-    objCImpGetRetString _ = objCImpGetRetString (undefined :: b)
+type family ForeignSig a
+type instance ForeignSig (IO a) = IO (ForeignArg a)
+type instance ForeignSig (a -> b) = ForeignArg a -> ForeignSig b
 
 -- This creates the ffi_cif (or the haskell binding of it) for a given 
 -- ObjCIMPType.  This is the heart of the glue for the language binding.
-makeCifForSelector sel = do
-    args <- objCImpGetArgsFFI sel
-    ret <- objCImpGetRetFFI sel
-    sel <- makeFFIType (undefined :: Ptr ())
-    let orderedArgs = (last args : sel : init args)
-    ffiPrepCif ret orderedArgs
+getCifForSelector :: SigType (ForeignSig a) => a -> SomeCIF
+getCifForSelector sel = getCIF defaultABI ret orderedArgs
+    where
+        proxy = (const Nothing :: a -> Maybe (ForeignSig a)) sel
+        ret  = retTypeOf  proxy
+        args = argTypesOf proxy
+        selType = ffiTypeOf_ ([] :: [SEL])
+        orderedArgs = last args : selType : init args
 
--- This creates the ffi_cif for a given function.
-makeCifForFunction fun = do
-    args <- objCImpGetArgsFFI fun
-    ret <- objCImpGetRetFFI fun
-    ffiPrepCif ret args
-
-{-# NOINLINE getCifForSelector #-} -- might be called from generated code
-getCifForSelector sel = unsafePerformIO $ makeCifForSelector sel
-
-{-# NOINLINE getCifForFunction #-} -- might be called from generated code
-getCifForFunction fun = unsafePerformIO $ makeCifForFunction fun
+getCifForFunction :: SigType (ForeignSig a) => a -> CIF (ForeignSig a)
+getCifForFunction fun = cif
 
 -- This creates an objective-c type signature for a given ObjCIMPType
+objCMethodType :: ObjCSigType (ForeignSig a) => a -> String
 objCMethodType thing = ret ++ concat (last args : ":" : init args)
     where
-        args = objCImpGetArgsString thing
-        ret = objCImpGetRetString thing
+        proxy = (const Nothing :: a -> Maybe (ForeignSig a)) thing
+        ret  = retTypeString  proxy
+        args = argTypeStrings proxy

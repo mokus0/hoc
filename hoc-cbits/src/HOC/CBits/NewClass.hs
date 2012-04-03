@@ -3,8 +3,9 @@ module HOC.CBits.NewClass where
 
 import Data.Word
 import HOC.CBits.Types
-import HOC.FFICallInterface
+import Foreign.LibFFI.Experimental
 import Foreign.C
+import Foreign.ObjC.SEL
 import Foreign.Ptr
 
 foreign import ccall "NewClass.h newClass"
@@ -18,7 +19,7 @@ foreign import ccall "NewClass.h makeMethodList"
 foreign import ccall "NewClass.h setMethodInList"
     rawSetMethodInList :: Ptr MethodList -> Int
                     -> SEL -> CString
-                    -> FFICif -> FunPtr IMP
+                    -> SomeCIF -> FunPtr HsIMP
                     -> IO ()
 
                       

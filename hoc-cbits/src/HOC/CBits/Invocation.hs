@@ -2,11 +2,11 @@
 module HOC.CBits.Invocation where
 
 import HOC.CBits.Types
-import HOC.FFICallInterface
+import Foreign.LibFFI.Experimental
 import Foreign.Ptr
 
 foreign import ccall "Invocation.h callWithExceptions"
-    c_callWithExceptions :: FFICif -> FunPtr a
+    c_callWithExceptions :: CIF a -> FunPtr a
                         -> Ptr b -> Ptr (Ptr ())
                         -> IO (Ptr ObjCObject) {- NSException -}
 

@@ -7,7 +7,8 @@ import Data.Dynamic
 import Foreign.ForeignPtr
 import Foreign.Ptr
 import Foreign.Storable
-import HOC.FFICallInterface
+import Foreign.LibFFI.Experimental hiding (Dynamic)
+import Foreign.ObjC
 
 data ID a = ID HSO | Nil
 
@@ -22,15 +23,18 @@ data HSO = HSO (Ptr ObjCObject) [Dynamic]
 -- an abstract type used to label 'Ptr's
 data ObjCObject
 
+instance FFIType ObjCObject where
+    ffiType = castType pointer
+instance ObjCType ObjCObject where
+    typeString    _ = "@"
+    ptrTypeString _ = "@"
+
 data Class_ a
 type Class a = ID (Class_ a)
 type MetaClass a = Class (Class_ a)
 
-newtype SEL = SEL (Ptr ())
-    deriving (Storable)
-
-type IMP = FFICif -> Ptr () -> Ptr (Ptr ()) -> IO (Ptr ObjCObject)
-foreign import ccall "wrapper" wrapIMP :: IMP -> IO (FunPtr IMP)
+type HsIMP = SomeCIF -> Ptr () -> Ptr (Ptr ()) -> IO (Ptr ObjCObject {- NSException -})
+foreign import ccall "wrapper" wrapHsIMP :: HsIMP -> IO (FunPtr HsIMP)
 
 newtype MethodList = MethodList (ForeignPtr MethodList)
 newtype IvarList = IvarList (ForeignPtr IvarList)

@@ -1,5 +1,5 @@
 module HOC.NewClass(
-        IMP,
+        HsIMP,
         MethodList,
         IvarList,
         newClass,
@@ -21,6 +21,7 @@ import HOC.Arguments
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign
+import Foreign.LibFFI.Experimental
 
 newClass :: Ptr ObjCObject -> CString
              -> IvarList
@@ -53,7 +54,7 @@ makeMethodList n = do
 setMethodInList (MethodList methodList) idx sel typ cif imp = 
     withForeignPtr methodList $ \methodList -> do
         typC <- newCString typ
-        thunk <- wrapIMP imp
+        thunk <- wrapHsIMP imp
         rawSetMethodInList methodList idx sel typC cif thunk
 
 makeDefaultIvarList = do

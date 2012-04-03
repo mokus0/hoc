@@ -1,14 +1,16 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TemplateHaskell #-}
 module HOC.CStruct( declareCStruct, declareCStructWithTag ) where
     
 import HOC.Arguments        ( ObjCArgument(..) )
 import HOC.TH
 import HOC.NameCaseChange   ( nameToUppercase )
-import HOC.FFICallInterface
 
 import Control.Monad.State
 import Data.Maybe           ( fromMaybe )
 import Foreign
+import Foreign.LibFFI.Experimental
 
 declareCStruct :: String -> [TypeQ] -> Q [Dec]
 declareCStructWithTag :: String -> Maybe String -> [TypeQ] -> Q [Dec]
@@ -17,17 +19,17 @@ declareCStructWithTag :: String -> Maybe String -> [TypeQ] -> Q [Dec]
 mkRawThing :: ObjCArgument a => a -> ForeignArg a
 mkRawThing _ = undefined
 
-sizeMember :: ObjCArgument a => a -> State Int ()
+sizeMember :: (ObjCArgument a, Storable (ForeignArg a)) => a -> State Int ()
 sizeMember thing =
     modify (\offset -> align offset (alignment rawThing) + sizeOf rawThing)
 
     where align x a = (x + (a-1)) .&. complement (a-1)
           rawThing = mkRawThing thing
 
-alignMember :: ObjCArgument a => a -> Int
+alignMember :: (ObjCArgument a, Storable (ForeignArg a)) => a -> Int
 alignMember = alignment . mkRawThing
 
-pokeMember :: ObjCArgument a => a -> StateT (Ptr c) IO ()
+pokeMember :: (ObjCArgument a, Storable (ForeignArg a)) => a -> StateT (Ptr c) IO ()
 pokeMember thing = do
     rawThing <- lift $ exportArgument thing
     modify (`alignPtr` alignment rawThing)
@@ -35,7 +37,7 @@ pokeMember thing = do
     lift $ poke (castPtr p) rawThing
     modify (`plusPtr` sizeOf rawThing)
 
-peekMember :: ObjCArgument a => StateT (Ptr c) IO a
+peekMember :: (ObjCArgument a, Storable (ForeignArg a)) => StateT (Ptr c) IO a
 peekMember = (mfix $ \result -> do
     modify (`alignPtr` alignment result)
     p <- get
@@ -43,10 +45,9 @@ peekMember = (mfix $ \result -> do
     modify (`plusPtr` sizeOf rawThing)
     return rawThing) >>= \rawThing -> lift (importArgument rawThing)
     
-ffiMember :: ObjCArgument a => a -> StateT [FFIType] IO ()
-ffiMember thing = do
-    t <- lift $ makeFFIType (mkRawThing thing)
-    modify (t :)
+ffiMember :: ObjCArgument a => a -> State [SomeType] ()
+ffiMember thing = modify (ffiTypeOf_ (foreign thing) :)
+    where foreign = const Nothing :: a -> Maybe (ForeignArg a)
 
 
 declareCStruct cname fieldTypes
@@ -104,16 +105,20 @@ declareCStructWithTag cname mbTag fieldTypes
                 ]
             ]
     
-        ffiDecl <- instanceD (cxt []) (conT ''FFITypeable `appT` conT name)
-            [
-                funD 'isStructType [ clause [wildP] (normalB [| True |]) [] ],
-                funD 'makeFFIType [
-                    clause [tildeP takeApartP]
-                        (normalB [| execStateT $(doWithArgs 'ffiMember) []
-                                    >>= makeStructType . reverse |])
-                        []
-                ]
-            ]
+        ffiDecls <- [d|
+                    instance FFIType $(conT name) where
+                        ffiType = Type 
+                            $( caseE [| undefined |] 
+                                [ match (tildeP takeApartP)
+                                    (normalB [| struct . reverse
+                                                    $ execState $(doWithArgs 'ffiMember) []
+                                             |])
+                                    []
+                                ]
+                            )
+                    instance ArgType $(conT name)
+                    instance RetType $(conT name)
+               |]
     
         argDecl <- instanceD (cxt []) (conT ''ObjCArgument `appT` conT name)
             [
@@ -128,4 +133,4 @@ declareCStructWithTag cname mbTag fieldTypes
                 ]
             ]
         
-        return [dataDecl, storableDecl, ffiDecl, argDecl]
+        return (dataDecl : storableDecl : argDecl : ffiDecls)

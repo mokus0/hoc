@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module HOC.CannedCIFs where
 
-import HOC.CBits        ( ID, SEL )
+import HOC.CBits        ( ID )
 import HOC.Arguments    ( getCifForSelector )
 import HOC.TH           ( fromSameModuleAs_v )
 -- import HOC.THDebug
@@ -11,6 +11,7 @@ import Data.Maybe       ( catMaybes, fromMaybe )
 import Data.Word        ( Word )
 import Foreign          ( Ptr )
 import Foreign.C
+import Foreign.ObjC     ( SEL )
 import Language.Haskell.TH
 
 import Control.Arrow
