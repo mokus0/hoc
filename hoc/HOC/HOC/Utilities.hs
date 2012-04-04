@@ -1,12 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
 module HOC.Utilities where
 
+import Foreign.Ptr          ( Ptr )
+import HOC.Arguments        ( ObjCArgument(..) )
 import HOC.CBits
-import HOC.Arguments
-import HOC.TH
 import HOC.ExportClass
-import Foreign.Ptr
 import HOC.MessageTarget
+import HOC.TH
 
 x # f = f x
 

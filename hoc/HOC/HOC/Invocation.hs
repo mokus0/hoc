@@ -1,15 +1,14 @@
 {-# LANGUAGE FlexibleContexts #-}
 module HOC.Invocation where
 
-import Foreign
-import Foreign.C            ( CInt )
-import Foreign.LibFFI.Experimental
-import Control.Monad        ( when )
-
-import HOC.CBits
-import HOC.Arguments
-
-import HOC.Exception
+import Control.Monad                ( when )
+import Foreign.Ptr                  ( Ptr, castPtr, nullPtr, FunPtr )
+import Foreign.Storable             ( peekElemOff )
+import Foreign.C                    ( CInt )
+import Foreign.LibFFI.Experimental  ( CIF, RetType, withInRet, ArgType, peekArg )
+import HOC.Arguments                ( ObjCArgument, ForeignArg, objcInRet, objcInArg )
+import HOC.CBits                    ( c_callWithExceptions )
+import HOC.Exception                ( exceptionObjCToHaskell )
 
 callWithException cif fun ret args = do
     exception <- c_callWithExceptions cif fun ret args
@@ -37,8 +36,8 @@ getMarshalledArgument args idx = do
     peekArg objcInArg (castPtr p)
 
 
-kHOCEnteredHaskell = 1 :: CInt
-kHOCImportedArguments = 2 :: CInt
+kHOCEnteredHaskell      = 1 :: CInt
+kHOCImportedArguments   = 2 :: CInt
 kHOCAboutToExportResult = 3 :: CInt
 kHOCAboutToLeaveHaskell = 4 :: CInt
 

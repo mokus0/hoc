@@ -8,21 +8,17 @@ module HOC.SelectorMarshaller(
         marshallerName
     ) where
 
-import HOC.Arguments
-import HOC.Base
-import HOC.CBits
-import HOC.ID
-import HOC.Invocation
-import HOC.MessageTarget
-
 import Foreign                      ( withArray )
-import Foreign.LibFFI.Experimental
+import Foreign.LibFFI.Experimental  ( CIF, withOutArg )
 import Foreign.ObjC                 ( SEL )
 import Foreign.Ptr                  ( Ptr, castPtr )
-import System.IO.Unsafe             ( unsafePerformIO )
 import GHC.Base                     ( unpackCString# )
-
+import HOC.Arguments                ( objcOutArg )
+import HOC.Base                     ( getSelectorForName )
+import HOC.CBits                    ( ObjCObject )
+import HOC.MessageTarget
 import HOC.TH
+import System.IO.Unsafe             ( unsafePerformIO )
 
 data SelectorInfo a = SelectorInfo {
         selectorInfoObjCName :: String,
@@ -99,7 +95,7 @@ makeMarshaller maybeInfoName haskellName nArgs isUnit isPure isRetained =
             where
                 marshallArgs' [] [] e = e
                 marshallArgs' (arg:args) (arg':args') e =
-                    [| withMarshalledArgument $arg $(lamE [varP arg'] e') |]
+                    [| withOutArg objcOutArg $arg $(lamE [varP arg'] e') |]
                     where e' = marshallArgs' args args' e
    
         collectArgs e = [| withArray $(listE [ [| castPtr $(varE arg) |]
@@ -133,3 +129,8 @@ makeMarshallers n =
 
 marshallerName nArgs False = "method" ++ show nArgs
 marshallerName nArgs True = "method" ++ show nArgs ++ "_"
+
+failNilMessage :: MessageTarget t => t -> String -> IO ()
+failNilMessage target selectorName
+    | isNil target = fail $ "Message sent to nil: " ++ selectorName
+    | otherwise = return ()

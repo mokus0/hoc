@@ -1,25 +1,25 @@
 {-# LANGUAGE TemplateHaskell, MultiParamTypeClasses, FunctionalDependencies #-}
 module HOC.ExportClass where
 
-import Foreign.C.String
-import Foreign.Ptr (castPtr)
-import Foreign.LibFFI.Experimental (cif, CIF, pokeRet)
 import Control.Concurrent.MVar
-import Data.Dynamic
-import Data.Maybe(mapMaybe)
-import Data.Char(toUpper)
-
-import HOC.Base
-import HOC.CBits
-import HOC.MessageTarget
-import HOC.Arguments
+import Data.Char                    ( toUpper )
+import Data.Dynamic                 ( toDyn, fromDynamic )
+import Data.Maybe                   ( mapMaybe )
+import Data.Typeable                ( Typeable )
+import Foreign.C.String             ( newCString )
+import Foreign.LibFFI.Experimental  ( cif, CIF, pokeRet )
+import Foreign.Ptr                  ( castPtr )
+import HOC.Arguments                ( objcOutRet, ForeignSel )
+import HOC.Base                     ( getSelectorForName )
+import HOC.CBits                    ( ID, recordHOCEvent )
+import HOC.Class                    ( getClassByName )
+import HOC.Exception                ( exceptionHaskellToObjC )
+import HOC.ID                       ( nil, getHaskellDataForID )
 import HOC.Invocation
-import HOC.ID
-import HOC.SelectorMarshaller
-import HOC.Class
+import HOC.MessageTarget            ( Object(..) )
 import HOC.NewClass
+import HOC.SelectorMarshaller       ( SelectorInfo(..) )
 import HOC.TH
-import HOC.Exception
 
 data ClassMember =
         InstanceMethod Name
@@ -73,7 +73,6 @@ exportClass name prefix members = sequence $ [
             (normalB (mkClassExportAction name prefix members)) [],
         dataD (cxt []) (mkName instanceDataName) []
             [normalC (mkName instanceDataName) strictTypes] [''Typeable],
-        valD (varP $ mkName tyConVar) (normalB [| mkTyCon instanceDataName |]) [],
         instanceD (cxt []) (conT ''InstanceVariables
                             `appT` clsTy `appT` instTy) 
                 [
@@ -89,7 +88,6 @@ exportClass name prefix members = sequence $ [
     where
         exportFunName = "initializeClass_" ++ name
         instanceDataName = name ++ "_IVARS"
-        tyConVar = "tycon_" ++ name ++ "_IVARS"
         strictTypes = map (strictType (return IsStrict)) wrappedIvarTypes
         ivars = [ (name, ty, [| nil |]) | Outlet name ty <- members ]
              ++ [ (name, ty, initial)   | InstanceVariable name ty initial <- members ]

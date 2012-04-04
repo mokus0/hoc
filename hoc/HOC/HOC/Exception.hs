@@ -1,24 +1,25 @@
-{-# LANGUAGE DeriveDataTypeable, 
-             ScopedTypeVariables #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 module HOC.Exception where
 
-import Data.Typeable
-import Foreign
-import Foreign.C.String     ( withCString )
-import Prelude              hiding ( catch )
 import Control.Exception
-
+import Data.Typeable        ( Typeable )
+import Foreign.Ptr          ( Ptr, nullPtr )
+import Foreign.StablePtr
+import Foreign.C.String     ( withCString )
+import HOC.Arguments        ( importArgument, exportArgument )
 import HOC.CBits
-import HOC.Arguments
-import HOC.ID ({- instances -})
+import HOC.ID               ( {- instances -} )
 
 data WrappedNSException = WrappedNSException (ID ())
     deriving Typeable
 
-exceptionObjCToHaskell :: Ptr ObjCObject -> IO a
+instance Exception WrappedNSException
+instance Show WrappedNSException where
+    show (WrappedNSException ex) = "<<NSException>>"
 
--- get the exception pointer figure out if it is a NSException
+-- |get the exception pointer figure out if it is a NSException
 -- or a haskell exception and throw it.
+exceptionObjCToHaskell :: Ptr ObjCObject -> IO a
 exceptionObjCToHaskell exception = do
     sptr <- unwrapHaskellException exception
     if (castStablePtrToPtr sptr == nullPtr)
@@ -30,21 +31,11 @@ exceptionObjCToHaskell exception = do
             throwIO exc
 
 exceptionHaskellToObjC :: IO a -> IO (Ptr ObjCObject)
-
 exceptionHaskellToObjC action = 
     (action >> return nullPtr)
         `catches` [
             Handler $ \(WrappedNSException exc) -> exportArgument exc,
-            Handler $ \(exc :: SomeException) -> withCString (show exc) $
-                \cstr -> newStablePtr exc >>= wrapHaskellException cstr
+            Handler $ \exc -> withCString (show exc) $ \cstr ->
+                                (newStablePtr (exc :: SomeException) 
+                                    >>= wrapHaskellException cstr)
         ]
-        
-instance Exception WrappedNSException where
-    toException = SomeException
-    fromException (SomeException ex) = cast ex
-        
-instance Show WrappedNSException where
-    show (WrappedNSException ex) = "<<NSException>>"
-        
-catchWrappedNSException :: IO a -> (WrappedNSException -> IO a) -> IO a
-catchWrappedNSException = catch

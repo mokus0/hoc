@@ -4,15 +4,14 @@
              ScopedTypeVariables #-}
 module HOC.StdArgumentTypes where
 
-import HOC.CBits
-import HOC.Arguments
-
 import Control.Exception        ( bracket )
-import Foreign
+import Foreign.Ptr              ( Ptr, nullPtr )
+import Foreign.Marshal.Array    ( peekArray0, withArray0 )
 import Foreign.C.Types
 import Foreign.ObjC             ( SEL )
-
-import HOC.Unicode
+import HOC.Arguments            ( ObjCArgument(..) )
+import HOC.CBits
+import HOC.Unicode              ( unicodeToUtf8, utf8ToUnicode )
 
 -- Objective C
 

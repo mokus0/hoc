@@ -7,12 +7,13 @@ module HOC.MsgSend(
         superSendMessageWithoutRetval
     ) where
 
+import Foreign.LibFFI.Experimental  ( CIF, RetType )
+import Foreign.ObjC                 ( SEL )
+import Foreign.Ptr                  ( Ptr, castPtr )
+import Foreign.Storable             ( peek, poke, peekElemOff )
+import HOC.Arguments                ( ObjCArgument, ForeignArg )
 import HOC.CBits
-import HOC.Arguments
-import HOC.Invocation
-import Foreign
-import Foreign.LibFFI.Experimental
-import Foreign.ObjC
+import HOC.Invocation               ( callWithRetval, callWithoutRetval )
 
 objSendMessageWithRetval
     :: (ObjCArgument ret, RetType (ForeignArg ret))

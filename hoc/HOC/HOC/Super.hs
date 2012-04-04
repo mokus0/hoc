@@ -5,14 +5,15 @@ module HOC.Super(
         SuperClass, SuperTarget, Super(super), withExportedSuper, castSuper
     ) where
 
-import HOC.CBits
-import HOC.Arguments
-import HOC.Class
-import HOC.ID
+import Foreign.Marshal.Alloc    ( allocaBytes )
+import Foreign.Ptr              ( Ptr, nullPtr )
+import Foreign.Storable         ( pokeByteOff, sizeOf )
+import HOC.Arguments            ( ObjCArgument(..) )
+import HOC.CBits                ( ObjCObject, ID )
+import HOC.Class                ( RawStaticClass, rawStaticClassForObject )
+import HOC.ID                   ( castObject )
+import HOC.MessageTarget        ( Object, MessageTarget(..) )
 import HOC.MsgSend
-import HOC.MessageTarget
-
-import Foreign
 
 {-
     Messages to super.

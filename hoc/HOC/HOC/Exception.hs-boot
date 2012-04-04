@@ -1,7 +1,7 @@
 module HOC.Exception where
 
-import HOC.Base
-import Foreign
+import Foreign.Ptr
+import HOC.CBits.Types
 
 exceptionObjCToHaskell :: Ptr ObjCObject -> IO a
 exceptionHaskellToObjC :: IO a -> IO (Ptr ObjCObject)

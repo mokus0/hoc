@@ -1,16 +1,8 @@
-{-# LANGUAGE MagicHash #-}
-module HOC.Dyld(
-        lookupSymbol,
-        lookupSymbol#
-    ) where
+module HOC.Dyld ( lookupSymbol ) where
 
-import GHC.Exts(Ptr(..), Addr#)
-import Foreign
-import System.Posix.DynamicLinker
+import Foreign.Ptr                  ( FunPtr )
+import System.Posix.DynamicLinker   ( dlsym, DL(Default) )
 
 lookupSymbol :: String -> IO (FunPtr a)
-lookupSymbol# :: Addr# -> IO (FunPtr a)
-
 lookupSymbol = dlsym Default
-lookupSymbol# name# = c_dlsym (packDL Default) (Ptr name#)
 

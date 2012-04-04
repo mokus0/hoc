@@ -13,15 +13,14 @@ module HOC.NewlyAllocated where
     the call to alloc and the call to init.
 -}
 
-import HOC.CBits        ( ID, Class, ObjCObject )
+import Foreign.Ptr      ( Ptr, nullPtr )
 import HOC.Arguments    ( ObjCArgument(..) )
-import HOC.Class
-import HOC.ID
+import HOC.CBits        ( ID, Class, ObjCObject )
+import HOC.Class        ( ClassObject(classObject) )
+import HOC.ID           ( castObject )
 import HOC.MessageTarget( MessageTarget(..) )
 import HOC.MsgSend
-import HOC.Super
-
-import Foreign.Ptr      ( Ptr, nullPtr )
+import HOC.Super        ( Super(super), SuperClass, withExportedSuper )
 
 data NewlyAllocated a
     = NewlyAllocated (Ptr ObjCObject)

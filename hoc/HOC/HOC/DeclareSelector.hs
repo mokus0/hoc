@@ -1,18 +1,16 @@
 {-# LANGUAGE TemplateHaskell, EmptyDataDecls #-}
 module HOC.DeclareSelector where
     
-import HOC.CBits
-import HOC.SelectorNameMangling
+import Control.Monad            ( MonadPlus(mplus) )
+import Data.Maybe               ( fromMaybe )
+import HOC.CannedCIFs           ( makeCannedCIFs, staticCifForSelectorType )
+import HOC.CBits                ( ID )
+import HOC.MessageTarget        ( MessageTarget )
+import HOC.NewlyAllocated       ( NewlyAllocated )
 import HOC.SelectorMarshaller
-import HOC.StdArgumentTypes     ()
-import HOC.NewlyAllocated       (NewlyAllocated)
-import HOC.Super
-import HOC.CannedCIFs
-import HOC.MessageTarget
-
-import Data.Maybe(fromMaybe)
-import Control.Monad(MonadPlus(mplus))
-
+import HOC.SelectorNameMangling ( mangleSelectorName )
+import HOC.StdArgumentTypes     ( {- instances -} )
+import HOC.Super                ( SuperTarget )
 import HOC.TH
 
 data Covariant

@@ -13,17 +13,19 @@ module HOC.NewClass(
         setHaskellDataMethod
     ) where
 
-import HOC.Base
+import Data.Word                    ( Word8 )
+import Foreign.C.String             ( CString, newCString )
+import Foreign.C.Types              ( CSize )
+import Foreign.ForeignPtr           ( newForeignPtr, withForeignPtr )
+import Foreign.LibFFI.Experimental  ( CIF, cif )
+import Foreign.ObjC                 ( SEL, ObjCSigType, sigTypeString )
+import Foreign.Ptr                  ( Ptr, nullPtr )
+import Foreign.Storable             ( sizeOf, alignment )
+import HOC.Arguments                ( ForeignSel )
+import HOC.Base                     ( getSelectorForName )
 import HOC.CBits
 import HOC.ID
-import HOC.Arguments
-import HOC.StdArgumentTypes
-
-import Foreign.C.String
-import Foreign.C.Types
-import Foreign
-import Foreign.LibFFI.Experimental
-import Foreign.ObjC
+import HOC.StdArgumentTypes         ({- instances -})
 
 newClass :: Ptr ObjCObject -> CString
              -> IvarList

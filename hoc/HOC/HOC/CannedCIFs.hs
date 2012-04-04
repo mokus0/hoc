@@ -1,21 +1,18 @@
 {-# LANGUAGE TemplateHaskell #-}
 module HOC.CannedCIFs where
 
-import HOC.CBits        ( ID )
-import HOC.Arguments    ( ForeignSel )
-import HOC.TH           ( fromSameModuleAs_v )
--- import HOC.THDebug
-
-import Data.List        ( intersperse )
-import Data.Maybe       ( catMaybes, fromMaybe )
-import Data.Word        ( Word )
-import Foreign          ( Ptr )
+import Control.Arrow                ( first )
+import Data.List                    ( intersperse )
+import Data.Maybe                   ( catMaybes, fromMaybe )
+import Data.Word                    ( Word )
+import Foreign                      ( Ptr )
 import Foreign.C
-import Foreign.LibFFI.Experimental ( CIF , cif )
-import Foreign.ObjC     ( SEL )
+import Foreign.LibFFI.Experimental  ( CIF , cif )
+import Foreign.ObjC                 ( SEL )
+import HOC.Arguments                ( ForeignSel )
+import HOC.CBits                    ( ID )
+import HOC.TH                       ( fromSameModuleAs_v )
 import Language.Haskell.TH
-
-import Control.Arrow
 
 -- removes all foralls (leaving in type variables) and de-sugars all type 
 -- synonyms.

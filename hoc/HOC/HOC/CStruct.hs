@@ -2,16 +2,15 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TemplateHaskell #-}
 module HOC.CStruct( declareCStruct, declareCStructWithTag ) where
-    
-import HOC.Arguments        ( ObjCArgument(..) )
-import HOC.TH
-import HOC.NameCaseChange   ( nameToUppercase )
 
 import Control.Monad.State
 import Data.Maybe           ( fromMaybe )
 import Foreign
 import Foreign.LibFFI.Experimental
 import Foreign.ObjC
+import HOC.Arguments        ( ObjCArgument(..) )
+import HOC.NameCaseChange   ( nameToUppercase )
+import HOC.TH
 
 declareCStruct :: String -> [TypeQ] -> Q [Dec]
 declareCStructWithTag :: String -> Maybe String -> [TypeQ] -> Q [Dec]

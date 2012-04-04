@@ -2,11 +2,10 @@
 module HOC.CEnum(CEnum(fromCEnum, toCEnum), declareCEnum, declareAnonymousCEnum)
     where
 
-import HOC.Arguments    ( ObjCArgument(..) )
-import HOC.TH
-import HOC.NameCaseChange
-
 import Foreign.C        ( CInt )
+import HOC.Arguments    ( ObjCArgument(..) )
+import HOC.NameCaseChange
+import HOC.TH
 
 class CEnum a where
     fromCEnum :: a -> CInt

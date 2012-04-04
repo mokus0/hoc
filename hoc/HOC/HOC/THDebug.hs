@@ -14,10 +14,9 @@ module HOC.THDebug
     assertQ,
     ) where
 
-import Language.Haskell.TH
-import Data.Generics
 import Control.Monad
-
+import Data.Generics
+import Language.Haskell.TH
 
 cleanNames = everywhere (mkT (mkName . nameBase))
 

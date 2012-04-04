@@ -1,22 +1,20 @@
 {-# LANGUAGE DoRec, TypeFamilies, FlexibleInstances, NPlusKPatterns #-}
 module HOC.ID where
 
-import HOC.Arguments
-import HOC.CBits
-
-import Control.Concurrent.MVar
-import Control.Exception(evaluate)
-import Control.Monad(when)
-import System.IO.Unsafe(unsafePerformIO)
-import System.Mem.Weak
-import Foreign.LibFFI.Experimental (SomeCIF, OutRet(..))
-import Foreign.ObjC
-import Foreign.Ptr
+import Control.Concurrent.MVar  ( newMVar, withMVar )
+import Control.Exception        ( evaluate )
+import Control.Monad            ( when )
+import Data.Dynamic             ( Dynamic )
+import Data.Maybe               ( fromMaybe )
+import Foreign.Marshal.Alloc    ( alloca )
+import Foreign.ObjC             ( SEL )
+import Foreign.Ptr              ( Ptr, castPtr, nullPtr )
 import Foreign.StablePtr
-import Foreign.Storable
-import Foreign.Marshal.Alloc(alloca)
-import Data.Dynamic
-import Data.Maybe(fromMaybe)
+import Foreign.Storable         ( peek, poke, peekElemOff )
+import HOC.Arguments            ( ObjCArgument(..) )
+import HOC.CBits
+import System.IO.Unsafe         ( unsafePerformIO )
+import System.Mem.Weak          ( Weak, mkWeakPtr, deRefWeak )
 
 dPutStrLn = if {--} False --} True
     then putStrLn

@@ -3,13 +3,7 @@
 module HOC.Arguments where
 
 import Foreign.LibFFI.Experimental
-import Foreign.Storable
 import Foreign.ObjC
-import Foreign.Ptr
-import Foreign.Marshal.Array
-import System.IO.Unsafe(unsafePerformIO)
-
-import HOC.TH
 
 -- ObjCArgument is the type class for Objective C arguments.
 -- exportArgument is the FFIType type used when exporting this type.
@@ -32,9 +26,6 @@ class FFIType (ForeignArg a) => ObjCArgument a where
     
     withExportedArgument :: a -> (ForeignArg a -> IO c) -> IO c
     withExportedArgument arg action = exportArgument arg >>= action
-
-withMarshalledArgument :: (ObjCArgument a, ArgType (ForeignArg a)) => a -> (Ptr (ForeignArg a) -> IO c) -> IO c
-withMarshalledArgument = withOutArg objcOutArg
 
 objcInRet :: (ObjCArgument a, RetType (ForeignArg a)) => InRet (ForeignArg a) a
 objcInRet = inRet { peekRet = \p -> peekRet inRet p >>= importArgument }

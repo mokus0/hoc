@@ -2,14 +2,14 @@
 {-# LANGUAGE TypeFamilies #-}
 module HOC.MessageTarget where
 
-import Control.Monad
-import HOC.CBits
-import HOC.Arguments
-import HOC.ID
-import HOC.MsgSend
-import Foreign.LibFFI.Experimental
-import Foreign.ObjC
-import Foreign.Ptr
+import Control.Monad                ( when )
+import Foreign.LibFFI.Experimental  ( CIF, RetType )
+import Foreign.ObjC                 ( SEL )
+import Foreign.Ptr                  ( Ptr, nullPtr )
+import HOC.Arguments                ( ObjCArgument(..) )
+import HOC.CBits                    ( ObjCObject, ID(..), releaseObject )
+import HOC.ID                       ( nil )
+import HOC.MsgSend                  ( objSendMessageWithRetval, objSendMessageWithoutRetval )
 
 class (ObjCArgument a, ForeignArg a ~ Ptr ObjCObject) => MessageTarget a where
     isNil :: a -> Bool
@@ -41,11 +41,6 @@ instance Object (ID a) where
     
     fromID (ID a) = ID a
     fromID Nil = Nil
-
-failNilMessage :: MessageTarget t => t -> String -> IO ()
-failNilMessage target selectorName
-    | isNil target = fail $ "Message sent to nil: " ++ selectorName
-    | otherwise = return ()
 
 releaseExtraReference :: MessageTarget a => a -> IO a
 releaseExtraReference obj

@@ -10,6 +10,10 @@ Flag BinaryInterfaces
                         (requires binary package)
 
 Library
+  hs-source-dirs:       HOC
+  ghc-options:          -fwarn-unused-imports
+                        -fwarn-unused-binds
+  
   build-depends:        base >= 4,
                         HOC-cbits == 1.0,
                         libffi-experiments,
@@ -51,8 +55,7 @@ Library
                         HOC.Utilities
                         HOC.THDebug
                         HOC.CStruct
-
-  hs-source-dirs:       HOC
+  
   if os(darwin)
     cpp-options:        -DMACOSX
   else

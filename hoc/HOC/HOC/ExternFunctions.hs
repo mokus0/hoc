@@ -1,15 +1,15 @@
 {-# LANGUAGE TemplateHaskell #-}
 module HOC.ExternFunctions(declareExternFun) where
 
+import Foreign.Ptr                  ( castPtr )
+import Foreign.Marshal.Array        ( withArray )
+import Foreign.LibFFI.Experimental  ( cif, CIF, withOutArg )
+import HOC.Arguments                ( objcOutArg, ForeignSig )
+import HOC.Dyld                     ( lookupSymbol )
+import HOC.Invocation               ( callWithRetval, callWithoutRetval )
+import HOC.NameCaseChange           ( nameToLowercase )
 import HOC.TH
-import HOC.Arguments
-import HOC.Invocation
-import HOC.Dyld
-import HOC.NameCaseChange
-
-import Foreign (withArray, castPtr)
-import Foreign.LibFFI.Experimental (toSomeCIF, cif, CIF)
-import System.IO.Unsafe
+import System.IO.Unsafe             ( unsafePerformIO )
 
 declareExternFun :: String -> TypeQ -> Q [Dec]
 
@@ -37,8 +37,8 @@ declareExternFun name typeSigQ
                 where
                     marshallArgs' [] [] e = e
                     marshallArgs' (arg:args) (arg':args') e =
-                        [| withMarshalledArgument $(arg)
-                                                  $(lamE [varP arg'] e') |]
+                        [| withOutArg objcOutArg $(arg)
+                                                 $(lamE [varP arg'] e') |]
                         where e' = marshallArgs' args args' e
        
             collectArgs e = [| withArray

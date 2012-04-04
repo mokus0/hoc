@@ -2,9 +2,9 @@ module HOC.Base where
 
 import Control.Exception(bracket)
 import Foreign.C.String (withCString)
+import Foreign.ObjC
 import HOC.CBits
 import System.IO.Unsafe (unsafePerformIO)
-import Foreign.ObjC
 
 -- The SEL Type
 

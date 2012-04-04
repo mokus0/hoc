@@ -3,15 +3,13 @@
              FlexibleInstances #-}
 module HOC.Class where
 
-import HOC.Arguments
-import HOC.ID
-import HOC.MessageTarget
-import HOC.CBits
-
-import Foreign.Ptr ( Ptr )
-import Foreign.C.String
-
-import System.IO.Unsafe (unsafePerformIO)
+import Foreign.C.String     ( withCString )
+import Foreign.Ptr          ( Ptr )
+import HOC.Arguments        ( withExportedArgument )
+import HOC.CBits            ( Class, objc_getClass, ObjCObject, ID, object_getClass )
+import HOC.ID               ( importImmortal )
+import HOC.MessageTarget    ( Object )
+import System.IO.Unsafe     ( unsafePerformIO )
 
 unsafeGetClassObject :: String -> Class a
 
