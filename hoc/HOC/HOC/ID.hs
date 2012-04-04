@@ -7,7 +7,6 @@ import Control.Monad            ( when )
 import Data.Dynamic             ( Dynamic )
 import Data.Maybe               ( fromMaybe )
 import Foreign.Marshal.Alloc    ( alloca )
-import Foreign.ObjC             ( SEL )
 import Foreign.Ptr              ( Ptr, castPtr, nullPtr )
 import Foreign.StablePtr
 import Foreign.Storable         ( peek, poke, peekElemOff )
@@ -156,7 +155,7 @@ makeNewHaskellData p = do
             freeStablePtr stable
             return (Just dat)
 
-haskellObject_retain_IMP :: Ptr ObjCObject -> HsIMP (Ptr ObjCObject -> SEL -> IO (Ptr ObjCObject))
+haskellObject_retain_IMP :: Ptr ObjCObject -> HsIMP (IO (Ptr ObjCObject))
 haskellObject_retain_IMP super cif ret args = do
     selfPtr <- peekElemOff args 0
     self <- peek (castPtr selfPtr) :: IO (Ptr ObjCObject)
@@ -193,7 +192,7 @@ haskellObject_retain self super = do
                         error "Error: Retaining Haskell Object that has already been released"
 
 
-haskellObject_release_IMP :: Ptr ObjCObject -> HsIMP (Ptr ObjCObject -> SEL -> IO ())
+haskellObject_release_IMP :: Ptr ObjCObject -> HsIMP (IO ())
 haskellObject_release_IMP super cif ret args = do
     selfPtr <- peekElemOff args 0
     self <- peek (castPtr selfPtr) :: IO (Ptr ObjCObject)
@@ -218,8 +217,7 @@ haskellObject_release super self = do
         replaceRetainedHaskellPart self (castPtrToStablePtr nullPtr)
 
 -- this is the implementation of the __getHaskellData__ selector.
-getHaskellData_IMP :: Ptr ObjCObject -> Maybe (IO Dynamic)
-                    -> HsIMP (Ptr ObjCObject -> SEL -> IO (Ptr ()))
+getHaskellData_IMP :: Ptr ObjCObject -> Maybe (IO Dynamic) -> HsIMP (IO (Ptr ()))
 getHaskellData_IMP super mbDat cif ret args = do
     selfPtr <- peekElemOff args 0
     self <- peek (castPtr selfPtr) :: IO (Ptr ObjCObject)

@@ -32,7 +32,7 @@ data Class_ a
 type Class a = ID (Class_ a)
 type MetaClass a = Class (Class_ a)
 
-type HsIMP a = CIF a -> Ptr (SigReturn a) -> Ptr (Ptr ()) -> IO (Ptr ObjCObject {- NSException -})
+type HsIMP a = CIF (Ptr ObjCObject -> SEL -> a) -> Ptr (SigReturn a) -> Ptr (Ptr ()) -> IO (Ptr ObjCObject {- NSException -})
 foreign import ccall "wrapper" wrapHsIMP :: HsIMP a -> IO (FunPtr (HsIMP a))
 
 newtype MethodList = MethodList (ForeignPtr MethodList)

@@ -55,7 +55,7 @@ makeMethodList n = do
     methods <- newForeignPtr freePtr methods
     return (MethodList methods)
 
-setMethodInList :: ObjCSigType a => MethodList -> Int -> SEL -> CIF a -> HsIMP a -> IO ()
+setMethodInList :: ObjCSigType a => MethodList -> Int -> SEL -> CIF (Ptr ObjCObject -> SEL -> a) -> HsIMP a -> IO ()
 setMethodInList (MethodList methodList) idx sel cif imp = 
     withForeignPtr methodList $ \methodList -> do
         typC <- newCString (sigTypeString cif)

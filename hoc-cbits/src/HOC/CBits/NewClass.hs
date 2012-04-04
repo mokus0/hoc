@@ -19,7 +19,7 @@ foreign import ccall "NewClass.h makeMethodList"
 foreign import ccall "NewClass.h setMethodInList"
     rawSetMethodInList :: Ptr MethodList -> Int
                     -> SEL -> CString
-                    -> CIF a -> FunPtr (HsIMP a)
+                    -> CIF (Ptr ObjCObject -> SEL -> a) -> FunPtr (HsIMP a)
                     -> IO ()
 
                       
