@@ -56,24 +56,16 @@ type family ForeignSig a
 type instance ForeignSig (IO a) = IO (ForeignArg a)
 type instance ForeignSig (a -> b) = ForeignArg a -> ForeignSig b
 
--- This creates the ffi_cif (or the haskell binding of it) for a given 
--- ObjCIMPType.  This is the heart of the glue for the language binding.
-getCifForSelector :: SigType (ForeignSig a) => a -> SomeCIF
-getCifForSelector sel = getCIF defaultABI ret orderedArgs
-    where
-        proxy = (const Nothing :: a -> Maybe (ForeignSig a)) sel
-        ret  = retTypeOf  proxy
-        args = argTypesOf proxy
-        selType = ffiTypeOf_ ([] :: [SEL])
-        orderedArgs = last args : selType : init args
+type family SelTarget a
+type instance SelTarget (a -> IO b) = a
+type instance SelTarget (a -> b -> c) = SelTarget (b -> c)
 
--- This creates an objective-c type signature for a given ObjCIMPType
-objCMethodType :: ObjCSigType (ForeignSig a) => a -> String
-objCMethodType thing = ret ++ concat (last args : ":" : init args)
-    where
-        proxy = (const Nothing :: a -> Maybe (ForeignSig a)) thing
-        ret  = retTypeString  proxy
-        args = argTypeStrings proxy
+type family DropSelTarget a
+type instance DropSelTarget (a -> IO b) = IO b
+type instance DropSelTarget (a -> b -> c) = a -> DropSelTarget (b -> c)
 
-objCTypeString :: ObjCType a => a -> String
-objCTypeString = typeString . (const Nothing :: a -> Maybe a)
+type family SelType a
+type instance SelType (a -> IO b) = a -> SEL -> IO b
+type instance SelType (a -> b -> c) = SelTarget (b -> c) -> SEL -> a -> DropSelTarget (b -> c)
+
+type ForeignSel a = ForeignSig (SelType a)

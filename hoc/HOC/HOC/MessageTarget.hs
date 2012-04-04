@@ -16,12 +16,12 @@ class (ObjCArgument a, ForeignArg a ~ Ptr ObjCObject) => MessageTarget a where
     
     sendMessageWithRetval :: (ObjCArgument ret, RetType (ForeignArg ret))
                           => a
-                          -> SomeCIF
+                          -> CIF (Ptr ObjCObject -> SEL -> b)
                           -> Ptr (Ptr ())
                           -> IO ret
 
     sendMessageWithoutRetval :: a
-                             -> SomeCIF
+                             -> CIF (Ptr ObjCObject -> SEL -> b)
                              -> Ptr (Ptr ())
                              -> IO ()
 

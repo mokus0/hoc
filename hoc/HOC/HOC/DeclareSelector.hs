@@ -238,7 +238,7 @@ declareRenamedSelector name haskellName typeSigQ =
                 
                 
                 -- $(infoName) :: SelectorInfo
-                sigD (mkName infoName) [t| SelectorInfo |],
+                -- sigD (mkName infoName) [t| SelectorInfo |],
                 
                 -- $(infoName) = ...
                 valD (varP $ mkName $ infoName) (normalB

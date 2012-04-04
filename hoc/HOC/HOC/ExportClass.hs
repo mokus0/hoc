@@ -3,7 +3,7 @@ module HOC.ExportClass where
 
 import Foreign.C.String
 import Foreign.Ptr (castPtr)
-import Foreign.LibFFI.Experimental (pokeRet)
+import Foreign.LibFFI.Experimental (cif, CIF, pokeRet)
 import Control.Concurrent.MVar
 import Data.Dynamic
 import Data.Maybe(mapMaybe)
@@ -56,8 +56,8 @@ setAsID ivar val obj = setIVar ivar (fromID val) obj
 
 type SetVarImpType target inst = ID () -> target -> IO ()
 type GetVarImpType target inst = target -> IO (ID ())
-setVarCif = getCifForSelector (undefined :: SetVarImpType (ID ()) (ID ()))
-getVarCif = getCifForSelector (undefined :: GetVarImpType (ID ()) (ID ()))
+setVarCif = cif :: CIF (ForeignSel (SetVarImpType (ID ()) (ID ())))
+getVarCif = cif :: CIF (ForeignSel (GetVarImpType (ID ()) (ID ())))
 
 
 exportClass :: String -- ^ Name of class you're exporting, e.g. "MyDocument"
@@ -229,7 +229,6 @@ mkClassExportAction name prefix members =
                 setMethodInList $(objCMethodList)
                                 num
                                 $(selExpr)
-                                (objCMethodType $(typed [|undefined|]))
                                 $(cifExpr)
                                 ($(lamE (map (uncurry mkVarP) [(False,"cif"),(not isUnit,"ret"),(True,"args")]) marshal))
             |]

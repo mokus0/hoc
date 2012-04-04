@@ -3,7 +3,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module HOC.CStruct( declareCStruct, declareCStructWithTag ) where
     
-import HOC.Arguments        ( ObjCArgument(..), objCTypeString )
+import HOC.Arguments        ( ObjCArgument(..) )
 import HOC.TH
 import HOC.NameCaseChange   ( nameToUppercase )
 
@@ -50,6 +50,8 @@ ffiMember :: ObjCArgument a => a -> State [SomeType] ()
 ffiMember thing = modify (ffiTypeOf_ (foreign thing) :)
     where foreign = const Nothing :: a -> Maybe (ForeignArg a)
 
+memberTypeString :: ObjCType a => a -> String
+memberTypeString = typeString . (const Nothing :: a -> Maybe a)
 
 declareCStruct cname fieldTypes
     = declareCStructWithTag cname Nothing fieldTypes
@@ -122,7 +124,7 @@ declareCStructWithTag cname mbTag fieldTypes
                             $( caseE [| (undefined :: p a -> a) p |] 
                                 [ match (tildeP takeApartP)
                                     (normalB [| "{" ++ structTag ++ "=" ++ 
-                                                concat $(mapArgs 'objCTypeString) ++
+                                                concat $(mapArgs 'memberTypeString) ++
                                                 "}" |])
                                     []
                                 ]

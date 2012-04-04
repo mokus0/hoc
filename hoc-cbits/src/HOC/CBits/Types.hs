@@ -33,8 +33,8 @@ data Class_ a
 type Class a = ID (Class_ a)
 type MetaClass a = Class (Class_ a)
 
-type HsIMP = SomeCIF -> Ptr () -> Ptr (Ptr ()) -> IO (Ptr ObjCObject {- NSException -})
-foreign import ccall "wrapper" wrapHsIMP :: HsIMP -> IO (FunPtr HsIMP)
+type HsIMP a = CIF a -> Ptr (SigReturn a) -> Ptr (Ptr ()) -> IO (Ptr ObjCObject {- NSException -})
+foreign import ccall "wrapper" wrapHsIMP :: HsIMP a -> IO (FunPtr (HsIMP a))
 
 newtype MethodList = MethodList (ForeignPtr MethodList)
 newtype IvarList = IvarList (ForeignPtr IvarList)

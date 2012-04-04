@@ -2,7 +2,7 @@
 module HOC.CannedCIFs where
 
 import HOC.CBits        ( ID )
-import HOC.Arguments    ( getCifForSelector )
+import HOC.Arguments    ( ForeignSel )
 import HOC.TH           ( fromSameModuleAs_v )
 -- import HOC.THDebug
 
@@ -11,6 +11,7 @@ import Data.Maybe       ( catMaybes, fromMaybe )
 import Data.Word        ( Word )
 import Foreign          ( Ptr )
 import Foreign.C
+import Foreign.LibFFI.Experimental ( CIF , cif )
 import Foreign.ObjC     ( SEL )
 import Language.Haskell.TH
 
@@ -95,28 +96,24 @@ toplevelConstructor _          = Nothing
 
 repTypeName t
     = case toplevelConstructor t of
-        Just t | t == ''ID      -> Just ptr
-               | t == ''SEL     -> Just ptr
-               | t == ''Ptr     -> Just ptr
-               | t == ''CInt    -> Just int
-               | t == ''CUInt   -> Just int
-               | t == ''Int     -> Just hInt
-               | t == ''Word    -> Just hInt
+        Just t | t == ''ID      -> Just "id"
+               | t == ''SEL     -> Just "sel"
+               | t == ''Ptr     -> Just "ptr"
+               | t == ''CInt    -> Just "cint"
+               | t == ''CUInt   -> Just "cuint"
+               | t == ''Int     -> Just "int"
+               | t == ''Word    -> Just "word"
                | t == ''()      -> Just "void"
                | t == ''CChar   -> Just "char"
-               | t == ''CUChar  -> Just "char"
+               | t == ''CUChar  -> Just "uchar"
                | t == ''CShort  -> Just "short"
-               | t == ''CUShort -> Just "short"
+               | t == ''CUShort -> Just "ushort"
                | t == ''CLLong  -> Just "llong"
-               | t == ''CULLong -> Just "llong"
+               | t == ''CULLong -> Just "ullong"
                | t == ''Float   -> Just "float"
                | t == ''Double  -> Just "double"
-               | t == ''Bool    -> Just "char"
+               | t == ''Bool    -> Just "bool"
         _ -> Nothing
-    where
-        ptr  = "ptr"
-        int  = "cint"
-        hInt = "hint"
 
 -- for quoted type qt, this returns 
 getCifTypeName qt
@@ -157,19 +154,17 @@ makeCannedCIFs types
 
     where
         -- turns a type and a name into a tuple:
-        -- name and the valD : cannedCIF_n = getCifForSelector (undefined :: t) 
+        -- name and the valD : cannedCIF_n = cif :: CIF (ForeignSel t)
         makeCannedCIF t n = (n, sequence [valD (varP $ cannedCIFName n) 
-                                     (normalB [| getCifForSelector $(e) |])
+                                     (normalB [| cif :: CIF (ForeignSel $t) |])
                                      []] )
-            where e = [| undefined |] `sigE` t
             
         cannedCIFName n = mkName $ "cannedCIF_" ++ n
 
 staticCifForSelectorType master ns t
     = do
         mbName <- getCifTypeName t
-        xt <- t
         case mbName of
             Just n | n `elem` ns
                 -> varE $ ("cannedCIF_" ++ n) `fromSameModuleAs_v` master
-            _ ->   [| getCifForSelector $( [| undefined |] `sigE` t) |]
+            _ ->   [| cif :: CIF (ForeignSel $t) |]

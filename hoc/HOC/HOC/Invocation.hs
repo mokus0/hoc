@@ -12,11 +12,11 @@ import HOC.Arguments
 import HOC.Exception
 
 callWithException cif fun ret args = do
-    exception <- c_callWithExceptions (CIF cif) fun ret args
+    exception <- c_callWithExceptions cif fun ret args
     when (exception /= nullPtr) $
         exceptionObjCToHaskell exception
 
-callWithoutRetval :: SomeCIF -> FunPtr a
+callWithoutRetval :: CIF a -> FunPtr a
                   -> Ptr (Ptr ())
                   -> IO ()
 
@@ -24,7 +24,7 @@ callWithoutRetval cif fun args = callWithException cif fun nullPtr args
 
 
 callWithRetval :: (ObjCArgument ret, RetType (ForeignArg ret))
-               => SomeCIF -> FunPtr a
+               => CIF a -> FunPtr a
                -> Ptr (Ptr ())
                -> IO ret
 

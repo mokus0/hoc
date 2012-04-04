@@ -17,6 +17,7 @@ import HOC.Base
 import HOC.CBits
 import HOC.ID
 import HOC.Arguments
+import HOC.StdArgumentTypes
 
 import Foreign.C.String
 import Foreign.C.Types
@@ -52,10 +53,10 @@ makeMethodList n = do
     methods <- newForeignPtr freePtr methods
     return (MethodList methods)
 
-setMethodInList :: MethodList -> Int -> SEL -> String -> SomeCIF -> HsIMP -> IO ()
-setMethodInList (MethodList methodList) idx sel typ cif imp = 
+setMethodInList :: ObjCSigType a => MethodList -> Int -> SEL -> CIF a -> HsIMP a -> IO ()
+setMethodInList (MethodList methodList) idx sel cif imp = 
     withForeignPtr methodList $ \methodList -> do
-        typC <- newCString typ
+        typC <- newCString (sigTypeString cif)
         thunk <- wrapHsIMP imp
         rawSetMethodInList methodList idx sel typC cif thunk
 
@@ -70,20 +71,20 @@ makeDefaultIvarList = do
     return list
 
 retainSelector = getSelectorForName "retain"
-retainCif = getCifForSelector (undefined :: ID () -> IO (ID ()))
+retainCif = cif :: CIF (ForeignSel (ID () -> IO (ID ())))
 
 releaseSelector = getSelectorForName "release"
-releaseCif = getCifForSelector (undefined :: ID () -> IO ())
+releaseCif = cif :: CIF (ForeignSel (ID () -> IO ()))
 
 getHaskellDataSelector = getSelectorForName "__getHaskellData__"
-getHaskellDataCif = getCifForSelector (undefined :: ID () -> IO (ID ()))
+getHaskellDataCif = cif :: CIF (ForeignSel (ID () -> IO (Ptr ())))
                                                 -- actually  -> IO (Ptr ()) ...
 
 setHaskellRetainMethod methodList idx super = 
-    setMethodInList methodList idx retainSelector "@@:" retainCif (haskellObject_retain_IMP super)
+    setMethodInList methodList idx retainSelector retainCif (haskellObject_retain_IMP super)
     
 setHaskellReleaseMethod methodList idx super = 
-    setMethodInList methodList idx releaseSelector "v@:" releaseCif (haskellObject_release_IMP super)
+    setMethodInList methodList idx releaseSelector releaseCif (haskellObject_release_IMP super)
 
 setHaskellDataMethod methodList idx super mbDat = 
-    setMethodInList methodList idx getHaskellDataSelector "^v@:" getHaskellDataCif (getHaskellData_IMP super mbDat)
+    setMethodInList methodList idx getHaskellDataSelector getHaskellDataCif (getHaskellData_IMP super mbDat)

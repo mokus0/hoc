@@ -16,23 +16,23 @@ import Foreign.ObjC
 
 objSendMessageWithRetval
     :: (ObjCArgument ret, RetType (ForeignArg ret))
-    => SomeCIF
+    => CIF (Ptr ObjCObject -> SEL -> a)
     -> Ptr (Ptr ())
     -> IO ret
 
 objSendMessageWithoutRetval
-    :: SomeCIF
+    :: CIF (Ptr ObjCObject -> SEL -> a)
     -> Ptr (Ptr ())
     -> IO ()
 
 superSendMessageWithRetval
     :: (ObjCArgument ret, RetType (ForeignArg ret))
-    => SomeCIF
+    => CIF (Ptr ObjCObject -> SEL -> a)
     -> Ptr (Ptr ())
     -> IO ret
 
 superSendMessageWithoutRetval
-    :: SomeCIF
+    :: CIF (Ptr ObjCObject -> SEL -> a)
     -> Ptr (Ptr ())
     -> IO ()
 

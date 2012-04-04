@@ -18,16 +18,16 @@ import HOC.MessageTarget
 import Foreign                      ( withArray )
 import Foreign.LibFFI.Experimental
 import Foreign.ObjC                 ( SEL )
-import Foreign.Ptr                  ( castPtr )
+import Foreign.Ptr                  ( Ptr, castPtr )
 import System.IO.Unsafe             ( unsafePerformIO )
 import GHC.Base                     ( unpackCString# )
 
 import HOC.TH
 
-data SelectorInfo = SelectorInfo {
+data SelectorInfo a = SelectorInfo {
         selectorInfoObjCName :: String,
         selectorInfoHaskellName :: String,
-        selectorInfoCif :: !SomeCIF,
+        selectorInfoCif :: !(CIF (Ptr ObjCObject -> SEL -> a)),
         selectorInfoSel :: !SEL,
         selectorInfoResultRetained :: !Bool
     }

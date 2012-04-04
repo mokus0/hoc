@@ -49,7 +49,7 @@ declareExternFun name typeSigQ
     
             invoke | isUnit = [| callWithoutRetval $(varE cifN) $(varE ptrN)
                                                    $(varE $ mkName "args")|]
-                   | otherwise = [| callWithRetval (toSomeCIF $(varE cifN)) $(varE ptrN)
+                   | otherwise = [| callWithRetval $(varE cifN) $(varE ptrN)
                                                    $(varE $ mkName "args")|]
     
                 -- ### FIXME: Code Duplication from DeclareSelector.hs
