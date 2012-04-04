@@ -7,8 +7,8 @@ import HOC.Invocation
 import HOC.Dyld
 import HOC.NameCaseChange
 
-import Foreign (withArray)
-import Foreign.LibFFI.Experimental (toSomeCIF)
+import Foreign (withArray, castPtr)
+import Foreign.LibFFI.Experimental (toSomeCIF, cif, CIF)
 import System.IO.Unsafe
 
 declareExternFun :: String -> TypeQ -> Q [Dec]
@@ -42,7 +42,9 @@ declareExternFun name typeSigQ
                         where e' = marshallArgs' args args' e
        
             collectArgs e = [| withArray
-                                $(listE (map varE marshalledArguments))
+                                $(listE [ [| castPtr $(varE arg) |] 
+                                        | arg <- marshalledArguments
+                                        ])
                                 $(lamE [varP $ mkName "args"] e) |]
     
             invoke | isUnit = [| callWithoutRetval $(varE cifN) $(varE ptrN)
@@ -71,16 +73,16 @@ declareExternFun name typeSigQ
         -- in
         sequence [
                 sigD n typeSigQ,
-                
-                valD (varP cifN)
-                     (normalB [| getCifForFunction $(varE n) |]) [],
-                valD (varP ptrN)
-                     (normalB [| unsafePerformIO $
-                                 lookupSymbol $(stringE name) |]) [],
 
                 funD n [
                     clause (map (varP.mkName) arguments)
                            (normalB $ marshallerBody)
-                           []
+                           [
+                                valD (varP cifN)
+                                     (normalB [| cif :: CIF (ForeignSig $typeSigQ) |]) [],
+                                valD (varP ptrN)
+                                     (normalB [| unsafePerformIO $
+                                                 lookupSymbol $(stringE name) |]) []
+                           ]
                 ]
             ]

@@ -40,8 +40,6 @@ instance ObjCArgument (NewlyAllocated a) where
     
     importArgument p = return (NewlyAllocated p)
 
-    objCTypeString _ = "@"
-
 -- Note that NewlyAllocated is not an instance of Object. Objects can be converted
 -- to IDs, and IDs are reference counted. Not retaining and releasing objects before
 -- they have been inited is the whole point of NewlyAllocated (besides some added type

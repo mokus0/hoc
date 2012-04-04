@@ -3,7 +3,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module HOC.CStruct( declareCStruct, declareCStructWithTag ) where
     
-import HOC.Arguments        ( ObjCArgument(..) )
+import HOC.Arguments        ( ObjCArgument(..), objCTypeString )
 import HOC.TH
 import HOC.NameCaseChange   ( nameToUppercase )
 
@@ -11,6 +11,7 @@ import Control.Monad.State
 import Data.Maybe           ( fromMaybe )
 import Foreign
 import Foreign.LibFFI.Experimental
+import Foreign.ObjC
 
 declareCStruct :: String -> [TypeQ] -> Q [Dec]
 declareCStructWithTag :: String -> Maybe String -> [TypeQ] -> Q [Dec]
@@ -116,21 +117,22 @@ declareCStructWithTag cname mbTag fieldTypes
                                     []
                                 ]
                             )
+                    instance ObjCType $(conT name) where
+                        typeString p = 
+                            $( caseE [| (undefined :: p a -> a) p |] 
+                                [ match (tildeP takeApartP)
+                                    (normalB [| "{" ++ structTag ++ "=" ++ 
+                                                concat $(mapArgs 'objCTypeString) ++
+                                                "}" |])
+                                    []
+                                ]
+                            )
                     instance ArgType $(conT name)
                     instance RetType $(conT name)
+                    instance ObjCArg $(conT name)
+                    instance ObjCRet $(conT name)
                |]
     
-        argDecl <- instanceD (cxt []) (conT ''ObjCArgument `appT` conT name)
-            [
-                valD (varP 'exportArgument) (normalB [| return |]) [],
-                valD (varP 'importArgument) (normalB [| return |]) [],
-                funD 'objCTypeString [
-                    clause [tildeP takeApartP]
-                        (normalB [| "{" ++ structTag ++ "=" ++ 
-                                    concat $(mapArgs 'objCTypeString) ++
-                                    "}" |])
-                        []
-                ]
-            ]
+        argDecl <- instanceD (cxt []) (conT ''ObjCArgument `appT` conT name) []
         
         return (dataDecl : storableDecl : argDecl : ffiDecls)

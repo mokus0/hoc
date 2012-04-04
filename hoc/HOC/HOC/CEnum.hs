@@ -58,9 +58,8 @@ declareCEnum name assocs
                 ],
             instanceD (cxt []) (conT ''ObjCArgument `appT` conT typ `appT` [t| CInt |])
                 `whereQ` [d|
-                    exportArgument x = return (fromCEnum x)
-                    importArgument x = return (toCEnum x)
-                    objCTypeString _ = "i"
+                    exportArgument = return . fromCEnum
+                    importArgument = return . toCEnum
                 |]
         ] ++ [
             valD (varP constant) (normalB $ conE constructor) []

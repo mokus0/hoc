@@ -15,7 +15,7 @@ import Foreign.LibFFI.Experimental
 import Foreign.ObjC
 
 objSendMessageWithRetval
-    :: ObjCArgument ret
+    :: (ObjCArgument ret, RetType (ForeignArg ret))
     => SomeCIF
     -> Ptr (Ptr ())
     -> IO ret
@@ -26,7 +26,7 @@ objSendMessageWithoutRetval
     -> IO ()
 
 superSendMessageWithRetval
-    :: ObjCArgument ret
+    :: (ObjCArgument ret, RetType (ForeignArg ret))
     => SomeCIF
     -> Ptr (Ptr ())
     -> IO ret

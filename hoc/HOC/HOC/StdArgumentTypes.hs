@@ -18,7 +18,7 @@ import HOC.Unicode
 
 -- ID: already defined 
 
-$(declareStorableObjCArgument [t| SEL |] ":")
+instance ObjCArgument SEL
 
 instance ObjCArgument Bool where
     type ForeignArg Bool = CSChar
@@ -26,41 +26,33 @@ instance ObjCArgument Bool where
     exportArgument True = return 1
     importArgument 0 = return False
     importArgument _ = return True
-    
-    objCTypeString _ = "c"
 
-$(declareStorableObjCArgument [t| Int |] "l")
-$(declareStorableObjCArgument [t| Float |] "f")
-$(declareStorableObjCArgument [t| Double |] "d")
+instance ObjCArgument Int
+instance ObjCArgument Float
+instance ObjCArgument Double
 
-instance ObjCArgument a => ObjCArgument (Ptr a) where
-    exportArgument a = return a
-    importArgument a = return a
-    objCTypeString _
-        | nested == "c" = "*"
-        | otherwise = '^' : nested
-        where nested = objCTypeString (undefined :: a)
+instance ObjCArgument a => ObjCArgument (Ptr a)
 
 -- Foreign.C.Types
 
-$(declareStorableObjCArgument [t| CInt |] "i")
-$(declareStorableObjCArgument [t| CUInt |] "I")
+instance ObjCArgument CInt
+instance ObjCArgument CUInt
 
-$(declareStorableObjCArgument [t| CFloat |] "f")
-$(declareStorableObjCArgument [t| CDouble |] "d")
+instance ObjCArgument CFloat
+instance ObjCArgument CDouble
 
-$(declareStorableObjCArgument [t| CChar |] "c")
-$(declareStorableObjCArgument [t| CSChar |] "c")
-$(declareStorableObjCArgument [t| CUChar |] "C")
+instance ObjCArgument CChar
+instance ObjCArgument CSChar
+instance ObjCArgument CUChar
 
-$(declareStorableObjCArgument [t| CShort |] "s")
-$(declareStorableObjCArgument [t| CUShort |] "S")
+instance ObjCArgument CShort
+instance ObjCArgument CUShort
 
-$(declareStorableObjCArgument [t| CLong |] "l")
-$(declareStorableObjCArgument [t| CULong |] "L")
+instance ObjCArgument CLong
+instance ObjCArgument CULong
 
-$(declareStorableObjCArgument [t| CLLong |] "q")
-$(declareStorableObjCArgument [t| CULLong |] "Q")
+instance ObjCArgument CLLong
+instance ObjCArgument CULLong
 
 -- String
 
@@ -76,7 +68,6 @@ instance (ObjCArgument a, ForeignArg a ~ Ptr b) => ObjCArgument (Maybe a) where
     importArgument p
         | p == nullPtr  = return Nothing
         | otherwise     = fmap Just (importArgument p)
-    objCTypeString _ = objCTypeString (undefined :: a)
 
 instance ObjCArgument String where
     type ForeignArg String = Ptr ObjCObject
@@ -89,5 +80,3 @@ instance ObjCArgument String where
         return nsstr
     importArgument arg = nsStringToUTF8 arg >>= peekArray0 0
                          >>= return . utf8ToUnicode
-   
-    objCTypeString _ = "@"

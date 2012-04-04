@@ -14,7 +14,7 @@ import Foreign.Ptr
 class (ObjCArgument a, ForeignArg a ~ Ptr ObjCObject) => MessageTarget a where
     isNil :: a -> Bool
     
-    sendMessageWithRetval :: ObjCArgument ret
+    sendMessageWithRetval :: (ObjCArgument ret, RetType (ForeignArg ret))
                           => a
                           -> SomeCIF
                           -> Ptr (Ptr ())

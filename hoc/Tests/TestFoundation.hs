@@ -66,13 +66,18 @@ $(exportClass "HaskellObjectWithOutlet" "ho1_" [
 $(declareClass "HaskellObjectWithDescription" "NSObject")
 
 $(exportClass "HaskellObjectWithDescription" "ho2_" [
-        InstanceMethod 'description
+        InstanceMethod 'description,
+        InstanceMethod 'rectValue
     ])
-    
+
+instance Has_rectValue (HaskellObjectWithDescription a)
+
 ho2_description self
     = do
         superDesc <- fmap fromNSString $ super self # description
         return $ toNSString $ head (words superDesc) ++ " TEST>"
+
+ho2_rectValue self = return (NSRect (NSPoint 100 200) (NSSize 300 400))
 
 $(declareClass "HaskellObjectWithIVar" "HaskellObjectWithOutlet")
 
@@ -364,7 +369,7 @@ tests = test [
                 result <- _NSValue # valueWithSize size >>= sizeValue
                 result @?= size
             ),
-            "rect" ~: (do
+            "rect" ~: (do    
                 let rect = NSRect (NSPoint 1 2) (NSSize 3 4)
                 result <- _NSValue # valueWithRect rect >>= rectValue
                 result @?= rect
@@ -375,6 +380,12 @@ tests = test [
                 ipa      <- nsString "IPA"
                 result <- homebrew # rangeOfString ipa
                 result @?= range
+            ),
+            "HaskellObjectStructRet" ~: (do
+                hobj <- _HaskellObjectWithDescription # alloc >>= init
+                rect     <- hobj # rectValue
+                expected <- hobj # ho2_rectValue
+                rect @?= expected
             )
         ],
         "externConstant" ~: (

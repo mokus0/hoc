@@ -50,8 +50,6 @@ instance MessageTarget a
     exportArgument _ = fail "HOC.Super: exportArgument"
     importArgument _ = fail "HOC.Super: importArgument"
 
-    objCTypeString _ = "@"      -- well, close enough.
-
 castSuper :: SuperClass (ID sub) (ID super) => ID sub -> ID super
 castSuper = castObject
 

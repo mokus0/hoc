@@ -50,7 +50,6 @@ module HOC (
         sel,
         
         ObjCArgument(..),
-        declareStorableObjCArgument,
         declareMarshalledObjectType,
         
         FFIType(..),

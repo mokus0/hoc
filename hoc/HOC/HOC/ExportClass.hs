@@ -2,6 +2,8 @@
 module HOC.ExportClass where
 
 import Foreign.C.String
+import Foreign.Ptr (castPtr)
+import Foreign.LibFFI.Experimental (pokeRet)
 import Control.Concurrent.MVar
 import Data.Dynamic
 import Data.Maybe(mapMaybe)
@@ -253,7 +255,7 @@ mkClassExportAction name prefix members =
                     | otherwise =
                         [| do result <- $(typedBodyWithArgs)
                               recordHOCEvent kHOCAboutToExportResult $(varE $ mkName "args")
-                              setMarshalledRetval $(retainedExpr) $(varE $ mkName "ret") result
+                              pokeRet (objcOutRet $retainedExpr) (castPtr $(varE $ mkName "ret")) result
                         |]
                 
                 typedBodyWithArgs = foldl1 appE (typed methodBody

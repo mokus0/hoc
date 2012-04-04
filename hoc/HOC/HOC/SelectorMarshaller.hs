@@ -8,6 +8,7 @@ module HOC.SelectorMarshaller(
         marshallerName
     ) where
 
+import HOC.Arguments
 import HOC.Base
 import HOC.CBits
 import HOC.ID
@@ -17,6 +18,7 @@ import HOC.MessageTarget
 import Foreign                      ( withArray )
 import Foreign.LibFFI.Experimental
 import Foreign.ObjC                 ( SEL )
+import Foreign.Ptr                  ( castPtr )
 import System.IO.Unsafe             ( unsafePerformIO )
 import GHC.Base                     ( unpackCString# )
 
@@ -97,10 +99,12 @@ makeMarshaller maybeInfoName haskellName nArgs isUnit isPure isRetained =
             where
                 marshallArgs' [] [] e = e
                 marshallArgs' (arg:args) (arg':args') e =
-                    [| withMarshalledArgument $(arg) $(lamE [varP arg'] e') |]
+                    [| withMarshalledArgument $arg $(lamE [varP arg'] e') |]
                     where e' = marshallArgs' args args' e
    
-        collectArgs e = [| withArray $(listE (map varE marshalledArguments))
+        collectArgs e = [| withArray $(listE [ [| castPtr $(varE arg) |]
+                                             | arg <- marshalledArguments
+                                             ])
                                      $(lamE [varP $ mkName "args"] e) |]
 
         invoke | isUnit = [| sendMessageWithoutRetval $(targetVar)

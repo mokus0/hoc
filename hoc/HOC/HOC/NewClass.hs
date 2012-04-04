@@ -22,6 +22,7 @@ import Foreign.C.String
 import Foreign.C.Types
 import Foreign
 import Foreign.LibFFI.Experimental
+import Foreign.ObjC
 
 newClass :: Ptr ObjCObject -> CString
              -> IvarList
@@ -51,12 +52,14 @@ makeMethodList n = do
     methods <- newForeignPtr freePtr methods
     return (MethodList methods)
 
+setMethodInList :: MethodList -> Int -> SEL -> String -> SomeCIF -> HsIMP -> IO ()
 setMethodInList (MethodList methodList) idx sel typ cif imp = 
     withForeignPtr methodList $ \methodList -> do
         typC <- newCString typ
         thunk <- wrapHsIMP imp
         rawSetMethodInList methodList idx sel typC cif thunk
 
+makeDefaultIvarList :: IO IvarList
 makeDefaultIvarList = do
     list <- makeIvarList 1
     name <- newCString "__retained_haskell_part__"

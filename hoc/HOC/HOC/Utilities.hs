@@ -21,8 +21,7 @@ declareMarshalledObjectType ty
                     ('withExportedArgument,   [| withExportedArgument   . toID |]),
                     ('exportArgument,         [| exportArgument         . toID |]),
                     ('exportArgumentRetained, [| exportArgumentRetained . toID |]),
-                    ('importArgument,         [| fmap fromID . importArgument    |]),
-                    ('objCTypeString,         [| objCTypeString         . toID |])
+                    ('importArgument,         [| fmap fromID . importArgument  |])
                 ]
         msgTarget <- instanceD context (conT ''MessageTarget
             `appT` ty')

@@ -9,7 +9,7 @@ import Control.Exception(evaluate)
 import Control.Monad(when)
 import System.IO.Unsafe(unsafePerformIO)
 import System.Mem.Weak
-import Foreign.LibFFI.Experimental (SomeCIF)
+import Foreign.LibFFI.Experimental (SomeCIF, OutRet(..))
 import Foreign.Ptr
 import Foreign.StablePtr
 import Foreign.Storable
@@ -69,6 +69,7 @@ replaceRetainedHaskellPart self newHSO = do
 
 instance ObjCArgument (ID a) where
     type ForeignArg (ID a) = Ptr ObjCObject
+    
     -- remember that thing may be lazy and never evaluated,
     -- including by "action"  Thus you must evaluate "thing"
     -- to ensure that the HSO object is properly allocated.
@@ -96,8 +97,6 @@ instance ObjCArgument (ID a) where
     exportArgumentRetained Nil = return nullPtr
     
     importArgument = importArgument' False
-    
-    objCTypeString _ = "@"
 
 importImmortal = importArgument' True
 
