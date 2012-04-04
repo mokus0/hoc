@@ -32,7 +32,7 @@ class (Object cls, Typeable ivars) => InstanceVariables cls ivars
       where
     initializeInstanceVariables :: IO ivars
 
-data IVar i v = IVar (i -> MVar v)
+newtype IVar i v = IVar (i -> MVar v)
 
 getAndSetIVar :: InstanceVariables cls iv => IVar iv a -> a -> cls -> IO a
 setIVar :: InstanceVariables cls iv => IVar iv a -> a -> cls -> IO ()

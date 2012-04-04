@@ -10,7 +10,7 @@ import HOC.Arguments        ( importArgument, exportArgument )
 import HOC.CBits
 import HOC.ID               ( {- instances -} )
 
-data WrappedNSException = WrappedNSException (ID ())
+newtype WrappedNSException = WrappedNSException (ID ())
     deriving Typeable
 
 instance Exception WrappedNSException
