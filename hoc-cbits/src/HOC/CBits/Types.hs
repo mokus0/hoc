@@ -6,7 +6,6 @@ module HOC.CBits.Types where
 import Data.Dynamic
 import Foreign.ForeignPtr
 import Foreign.Ptr
-import Foreign.Storable
 import Foreign.LibFFI.Experimental hiding (Dynamic)
 import Foreign.ObjC
 
