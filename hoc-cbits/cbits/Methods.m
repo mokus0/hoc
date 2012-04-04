@@ -16,17 +16,12 @@ static void objcIMP(ffi_cif *cif, void * ret, void **args, void *userData)
         [e raise];
 }
 
-static ffi_closure *newIMP(ffi_cif *cif, haskellIMP imp)
+static IMP newIMP(ffi_cif *cif, haskellIMP imp)
 {
-    //ffi_closure *closure = (ffi_closure*) calloc(1, sizeof(ffi_closure));
-    ffi_closure *closure = mmap(NULL, sizeof(ffi_closure), PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON | MAP_PRIVATE, -1, 0);
-    if (closure == (void*)-1)
-    {
-        // TODO: Check errno and handle the error.
-    }
-
-    ffi_prep_closure(closure, cif, &objcIMP, (void*) imp);
-    return closure;
+    void *entry;
+    ffi_closure *closure = ffi_closure_alloc(sizeof(ffi_closure), &entry);
+    ffi_prep_closure_loc(closure, cif, &objcIMP, (void*) imp, entry);
+    return (IMP) entry;
 }
 
 struct hoc_method_list * makeMethodList(int n)
