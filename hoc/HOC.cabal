@@ -1,16 +1,16 @@
-name: HOC
-version: 1.0
-license: BSD4
-license-file: LICENSE
-cabal-version: >= 1.9.2
-build-type: Simple
+name:                   HOC
+version:                1.0
+license:                BSD4
+license-file:           LICENSE
+cabal-version:          >= 1.9.2
+build-type:             Simple
 
 Flag BinaryInterfaces
-    description: write HOC interface generator files in binary format
-                 (requires binary package)
+  description:          write HOC interface generator files in binary format
+                        (requires binary package)
 
 Library
-    build-depends:      base >= 4,
+  build-depends:        base >= 4,
                         HOC-cbits == 1.0,
                         libffi-experiments,
                         mtl,
@@ -19,51 +19,50 @@ Library
                         template-haskell,
                         th-extras,
                         unix
-                   
-    exposed-modules:
-        HOC,
-        HOC.NameCaseChange,
-        HOC.Exception,
-        HOC.SelectorNameMangling
-    other-modules:
-        HOC.Arguments,
-        HOC.Base,
-        HOC.CEnum,
-        HOC.CannedCIFs,
-        HOC.Class,
-        HOC.DeclareClass,
-        HOC.DeclareSelector,
-        HOC.Dyld,
-        HOC.ExportClass,
-        HOC.ExternConstants,
-        HOC.ExternFunctions,
-        HOC.ID,
-        HOC.MessageTarget,
-        HOC.Invocation,
-        HOC.MsgSend,
-        HOC.NewClass,
-        HOC.NewlyAllocated,
-        HOC.SelectorMarshaller,
-        HOC.Selectors,
-        HOC.StdArgumentTypes,
-        HOC.Super,
-        HOC.TH,
-        HOC.Unicode,
-        HOC.Utilities,
-        HOC.THDebug,
-        HOC.CStruct
+  
+  exposed-modules:      HOC
+                        HOC.NameCaseChange
+                        HOC.Exception
+                        HOC.SelectorNameMangling
+  
+  other-modules:        HOC.Arguments
+                        HOC.Base
+                        HOC.CEnum
+                        HOC.CannedCIFs
+                        HOC.Class
+                        HOC.DeclareClass
+                        HOC.DeclareSelector
+                        HOC.Dyld
+                        HOC.ExportClass
+                        HOC.ExternConstants
+                        HOC.ExternFunctions
+                        HOC.ID
+                        HOC.MessageTarget
+                        HOC.Invocation
+                        HOC.MsgSend
+                        HOC.NewClass
+                        HOC.NewlyAllocated
+                        HOC.SelectorMarshaller
+                        HOC.Selectors
+                        HOC.StdArgumentTypes
+                        HOC.Super
+                        HOC.TH
+                        HOC.Unicode
+                        HOC.Utilities
+                        HOC.THDebug
+                        HOC.CStruct
 
-    hs-source-dirs: HOC
-    if os(darwin)
-        cpp-options: -DMACOSX
-    else
-        cpp-options: -DGNUSTEP
+  hs-source-dirs:       HOC
+  if os(darwin)
+    cpp-options:        -DMACOSX
+  else
+    cpp-options:        -DGNUSTEP
 
 Executable hoc-ifgen
-    main-is: Main.hs
-    hs-source-dirs: HOC, InterfaceGenerator2
-
-    build-depends:      base >= 4,
+  main-is:              Main.hs
+  hs-source-dirs:       HOC, InterfaceGenerator2
+  
+  build-depends:        base >= 4,
                         bytestring,
                         containers,
                         directory,
@@ -76,17 +75,17 @@ Executable hoc-ifgen
                         pretty,
                         syb,
                         template-haskell
-    
-    if flag(BinaryInterfaces)
-        build-depends:  binary >= 0.2
-        cpp-options: -DBINARY_INTERFACES
+  
+  if flag(BinaryInterfaces)
+    build-depends:      binary >= 0.2
+    cpp-options:        -DBINARY_INTERFACES
 
 Test-Suite hoc-test
-    type: exitcode-stdio-1.0
-    main-is: Test.hs
-    hs-source-dirs: HOC, InterfaceGenerator2, Tests
-    
-    build-depends:      base >= 4,
+  type:                 exitcode-stdio-1.0
+  main-is:              Test.hs
+  hs-source-dirs:       HOC, InterfaceGenerator2, Tests
+  
+  build-depends:        base >= 4,
                         containers,
                         libffi-experiments,
                         HOC-cbits,
@@ -98,8 +97,8 @@ Test-Suite hoc-test
                         template-haskell,
                         th-extras,
                         unix
-
-    if os(darwin)
-        cpp-options: -DMACOSX
-    else
-        cpp-options: -DGNUSTEP
+  
+  if os(darwin)
+    cpp-options:        -DMACOSX
+  else
+    cpp-options:        -DGNUSTEP
