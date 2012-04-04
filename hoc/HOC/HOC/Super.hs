@@ -9,9 +9,8 @@ import Foreign.Marshal.Alloc    ( allocaBytes )
 import Foreign.Ptr              ( Ptr, nullPtr )
 import Foreign.Storable         ( pokeByteOff, sizeOf )
 import HOC.Arguments            ( ObjCArgument(..) )
-import HOC.CBits                ( ObjCObject, ID )
+import HOC.CBits                ( ObjCObject, ID, castObject )
 import HOC.Class                ( RawStaticClass, rawStaticClassForObject )
-import HOC.ID                   ( castObject )
 import HOC.MessageTarget        ( Object, MessageTarget(..) )
 import HOC.MsgSend
 

@@ -16,6 +16,13 @@ instance Eq (ID a) where
     Nil == Nil                          = True
     _ == _                              = False
 
+nil :: ID a
+nil = Nil
+
+castObject :: ID a -> ID b
+castObject (ID a) = ID a
+castObject Nil = Nil
+
 -- HSO: HaskellSideObject
 data HSO = HSO (Ptr ObjCObject) [Dynamic]
 

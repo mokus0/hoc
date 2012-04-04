@@ -11,10 +11,10 @@ import Foreign.LibFFI.Experimental  ( cif, CIF, pokeRet )
 import Foreign.Ptr                  ( castPtr )
 import HOC.Arguments                ( objcOutRet, ForeignSel )
 import HOC.Base                     ( getSelectorForName )
-import HOC.CBits                    ( ID, recordHOCEvent )
+import HOC.CBits                    ( ID, nil, recordHOCEvent )
 import HOC.Class                    ( getClassByName )
 import HOC.Exception                ( exceptionHaskellToObjC )
-import HOC.ID                       ( nil, getHaskellDataForID )
+import HOC.ID                       ( getHaskellDataForID )
 import HOC.Invocation
 import HOC.MessageTarget            ( Object(..) )
 import HOC.NewClass

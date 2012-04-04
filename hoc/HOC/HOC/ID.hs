@@ -21,11 +21,6 @@ dPutStrLn = if {--} False --} True
 
 dPutWords = dPutStrLn . unwords
 
-nil = Nil
-
-castObject (ID a) = ID a
-castObject Nil = Nil
-
 {-
     *
     * WARNING: Arcane Magic Follows

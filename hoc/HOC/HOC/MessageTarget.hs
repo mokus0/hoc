@@ -7,8 +7,7 @@ import Foreign.LibFFI.Experimental  ( CIF, RetType )
 import Foreign.ObjC                 ( SEL )
 import Foreign.Ptr                  ( Ptr, nullPtr )
 import HOC.Arguments                ( ObjCArgument(..) )
-import HOC.CBits                    ( ObjCObject, ID(..), releaseObject )
-import HOC.ID                       ( nil )
+import HOC.CBits                    ( ObjCObject, ID(..), nil, releaseObject )
 import HOC.MsgSend                  ( objSendMessageWithRetval, objSendMessageWithoutRetval )
 
 class (ObjCArgument a, ForeignArg a ~ Ptr ObjCObject) => MessageTarget a where

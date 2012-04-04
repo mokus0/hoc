@@ -15,9 +15,8 @@ module HOC.NewlyAllocated where
 
 import Foreign.Ptr      ( Ptr, nullPtr )
 import HOC.Arguments    ( ObjCArgument(..) )
-import HOC.CBits        ( ID, Class, ObjCObject )
+import HOC.CBits        ( ID, Class, ObjCObject, castObject )
 import HOC.Class        ( ClassObject(classObject) )
-import HOC.ID           ( castObject )
 import HOC.MessageTarget( MessageTarget(..) )
 import HOC.MsgSend
 import HOC.Super        ( Super(super), SuperClass, withExportedSuper )
