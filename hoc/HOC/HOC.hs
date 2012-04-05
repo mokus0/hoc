@@ -66,7 +66,6 @@ module HOC (
     ) where
 
 import HOC.CBits
-import HOC.Base
 import HOC.Arguments
 import HOC.ID
 import HOC.MessageTarget

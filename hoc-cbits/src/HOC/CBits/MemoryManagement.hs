@@ -1,6 +1,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module HOC.CBits.MemoryManagement where
 
+import Control.Exception (bracket)
 import Foreign.C.Types
 import Foreign.ObjC
 import Foreign.Ptr
@@ -36,3 +37,6 @@ foreign import ccall "MemoryManagement.h releaseObjectWithPool"
     releaseObjectWithPool :: Ptr ObjCObject -> IO ()
 foreign import ccall "MemoryManagement.h deallocObjectWithPool"
     deallocObjectWithPool :: Ptr ObjCObject -> IO ()
+
+withAutoreleasePool :: IO a -> IO a
+withAutoreleasePool action = bracket newAutoreleasePool releaseObject (const action)

@@ -30,7 +30,6 @@ Library
                         HOC.SelectorNameMangling
   
   other-modules:        HOC.Arguments
-                        HOC.Base
                         HOC.CEnum
                         HOC.CannedCIFs
                         HOC.Class

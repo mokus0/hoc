@@ -5,7 +5,7 @@ import qualified TestFoundation
 
 import Test.HUnit
 
-import HOC.Base( withAutoreleasePool )
+import HOC.CBits( withAutoreleasePool )
 
 main = withAutoreleasePool $ runTestTT $ test [
         TestPreprocessor.tests,
