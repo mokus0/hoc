@@ -66,6 +66,17 @@ int cifIsStret(ffi_cif *cif)
             //  [3] same source in llvm-gcc 4.2 sources as of XCode 4.3
         
         // TODO: this logic is not complete, and it will probably not be easy to complete it.
+        // 
+        // I think this commented-out version will work better, but I don't have a working Mac
+        // to test on right now.  It's based on the fact that ffi_prepare_cif_machdep
+        // marks the CIF as void-returning if libffi decides the return type is to be
+        // passed in memory.
+        // 
+        // ret = (cif->flags & FFI_TYPE_VOID) != 0
+        //     || cif->rtype->size > 16;
+        // (test whether that second clause is actually necessary - looking at the source, 
+        // I believe it is because I don't see anywhere that it deals with the fact that
+        // OS X's gcc classifies some structs incorrectly)
         ret = cif->rtype->size > 16;
 #else
         ret = 1;
