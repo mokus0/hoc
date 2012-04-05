@@ -7,6 +7,7 @@ import Control.Monad            ( when )
 import Data.Dynamic             ( Dynamic )
 import Data.Maybe               ( fromMaybe )
 import Foreign.Marshal.Alloc    ( alloca )
+import Foreign.ObjC             ( ObjCObject )
 import Foreign.Ptr              ( Ptr, castPtr, nullPtr )
 import Foreign.StablePtr
 import Foreign.Storable         ( peek, poke, peekElemOff )

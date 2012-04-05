@@ -13,9 +13,10 @@ module HOC.NewlyAllocated where
     the call to alloc and the call to init.
 -}
 
+import Foreign.ObjC     ( ObjCObject )
 import Foreign.Ptr      ( Ptr, nullPtr )
 import HOC.Arguments    ( ObjCArgument(..) )
-import HOC.CBits        ( ID, Class, ObjCObject, castObject )
+import HOC.CBits        ( ID, Class, castObject )
 import HOC.Class        ( ClassObject(classObject) )
 import HOC.MessageTarget( MessageTarget(..) )
 import HOC.MsgSend

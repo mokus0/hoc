@@ -8,7 +8,7 @@ module HOC.MsgSend(
     ) where
 
 import Foreign.LibFFI.Experimental  ( CIF, RetType )
-import Foreign.ObjC                 ( SEL )
+import Foreign.ObjC                 ( ObjCObject, SEL )
 import Foreign.Ptr                  ( Ptr, castPtr )
 import Foreign.Storable             ( peek, poke, peekElemOff )
 import HOC.Arguments                ( ObjCArgument, ForeignArg )
@@ -17,23 +17,23 @@ import HOC.Invocation               ( callWithRetval, callWithoutRetval )
 
 objSendMessageWithRetval
     :: (ObjCArgument ret, RetType (ForeignArg ret))
-    => CIF (Ptr ObjCObject -> SEL -> a)
+    => CIF (Ptr ObjCObject -> SEL a -> a)
     -> Ptr (Ptr ())
     -> IO ret
 
 objSendMessageWithoutRetval
-    :: CIF (Ptr ObjCObject -> SEL -> a)
+    :: CIF (Ptr ObjCObject -> SEL a -> a)
     -> Ptr (Ptr ())
     -> IO ()
 
 superSendMessageWithRetval
     :: (ObjCArgument ret, RetType (ForeignArg ret))
-    => CIF (Ptr ObjCObject -> SEL -> a)
+    => CIF (Ptr ObjCObject -> SEL a -> a)
     -> Ptr (Ptr ())
     -> IO ret
 
 superSendMessageWithoutRetval
-    :: CIF (Ptr ObjCObject -> SEL -> a)
+    :: CIF (Ptr ObjCObject -> SEL a -> a)
     -> Ptr (Ptr ())
     -> IO ()
 

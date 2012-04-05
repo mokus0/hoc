@@ -1,9 +1,10 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module HOC.CBits.RetainedHaskellPart where
 
-import HOC.CBits.Types
+import Foreign.ObjC
 import Foreign.Ptr
 import Foreign.StablePtr
+import HOC.CBits.Types
 
 foreign import ccall unsafe "RetainedHaskellPart.h getRetainedHaskellPart"
     getRetainedHaskellPart :: Ptr ObjCObject -> IO (StablePtr HSO)

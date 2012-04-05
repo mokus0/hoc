@@ -1,10 +1,11 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module HOC.CBits.ObjectMap where
 
-import HOC.CBits.Types
 import Foreign.C.Types
+import Foreign.ObjC
 import Foreign.Ptr
 import Foreign.StablePtr
+import HOC.CBits.Types
 import System.Mem.Weak
 
 -- given a pointer to an ObjCObject, return a stablePtr to a Weak reference to 

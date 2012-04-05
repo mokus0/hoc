@@ -4,9 +4,10 @@
 module HOC.Class where
 
 import Foreign.C.String     ( withCString )
+import Foreign.ObjC         ( ObjCObject )
 import Foreign.Ptr          ( Ptr )
 import HOC.Arguments        ( withExportedArgument )
-import HOC.CBits            ( Class, objc_getClass, ObjCObject, ID, object_getClass )
+import HOC.CBits            ( Class, objc_getClass, ID, object_getClass )
 import HOC.ID               ( importImmortal )
 import HOC.MessageTarget    ( Object )
 import System.IO.Unsafe     ( unsafePerformIO )

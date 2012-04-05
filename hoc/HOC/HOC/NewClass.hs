@@ -18,11 +18,10 @@ import Foreign.C.String             ( CString, newCString )
 import Foreign.C.Types              ( CSize )
 import Foreign.ForeignPtr           ( newForeignPtr, withForeignPtr )
 import Foreign.LibFFI.Experimental  ( CIF, cif )
-import Foreign.ObjC                 ( SEL, ObjCSigType, sigTypeString )
+import Foreign.ObjC                 ( SEL, getSEL, ObjCObject, ObjCSigType, sigTypeString )
 import Foreign.Ptr                  ( Ptr, nullPtr )
 import Foreign.Storable             ( sizeOf, alignment )
 import HOC.Arguments                ( ForeignSel )
-import HOC.Base                     ( getSelectorForName )
 import HOC.CBits
 import HOC.ID
 import HOC.StdArgumentTypes         ({- instances -})
@@ -55,7 +54,7 @@ makeMethodList n = do
     methods <- newForeignPtr freePtr methods
     return (MethodList methods)
 
-setMethodInList :: ObjCSigType a => MethodList -> Int -> SEL -> CIF (Ptr ObjCObject -> SEL -> a) -> HsIMP a -> IO ()
+setMethodInList :: ObjCSigType a => MethodList -> Int -> SEL a -> CIF (Ptr ObjCObject -> SEL a -> a) -> HsIMP a -> IO ()
 setMethodInList (MethodList methodList) idx sel cif imp = 
     withForeignPtr methodList $ \methodList -> do
         typC <- newCString (sigTypeString cif)
@@ -72,13 +71,13 @@ makeDefaultIvarList = do
         (fromIntegral $ alignment nullPtr)
     return list
 
-retainSelector = getSelectorForName "retain"
+retainSelector = getSEL "retain"
 retainCif = cif :: CIF (ForeignSel (ID () -> IO (ID ())))
 
-releaseSelector = getSelectorForName "release"
+releaseSelector = getSEL "release"
 releaseCif = cif :: CIF (ForeignSel (ID () -> IO ()))
 
-getHaskellDataSelector = getSelectorForName "__getHaskellData__"
+getHaskellDataSelector = getSEL "__getHaskellData__"
 getHaskellDataCif = cif :: CIF (ForeignSel (ID () -> IO (Ptr ())))
                                                 -- actually  -> IO (Ptr ()) ...
 

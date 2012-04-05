@@ -8,7 +8,7 @@ import Control.Exception        ( bracket )
 import Foreign.Ptr              ( Ptr, nullPtr )
 import Foreign.Marshal.Array    ( peekArray0, withArray0 )
 import Foreign.C.Types
-import Foreign.ObjC             ( SEL )
+import Foreign.ObjC             ( ObjCObject, SEL )
 import HOC.Arguments            ( ObjCArgument(..) )
 import HOC.CBits
 import HOC.Unicode              ( unicodeToUtf8, utf8ToUnicode )
@@ -17,7 +17,7 @@ import HOC.Unicode              ( unicodeToUtf8, utf8ToUnicode )
 
 -- ID: already defined 
 
-instance ObjCArgument SEL
+instance ObjCArgument (SEL a)
 
 instance ObjCArgument Bool where
     type ForeignArg Bool = CSChar

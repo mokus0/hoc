@@ -3,7 +3,7 @@ module HOC.Exception where
 
 import Control.Exception
 import Data.Typeable        ( Typeable )
-import Foreign.Ptr          ( Ptr, nullPtr )
+import Foreign.Ptr          ( Ptr, castPtr, nullPtr )
 import Foreign.StablePtr
 import Foreign.C.String     ( withCString )
 import HOC.Arguments        ( importArgument, exportArgument )
@@ -19,22 +19,22 @@ instance Show WrappedNSException where
 
 -- |get the exception pointer figure out if it is a NSException
 -- or a haskell exception and throw it.
-exceptionObjCToHaskell :: Ptr ObjCObject -> IO a
+exceptionObjCToHaskell :: Ptr ObjCException -> IO a
 exceptionObjCToHaskell exception = do
     sptr <- unwrapHaskellException exception
     if (castStablePtrToPtr sptr == nullPtr)
         then do
-            exc <- importArgument exception
+            exc <- importArgument (castPtr exception)
             throwIO $ WrappedNSException exc
         else do
             exc <- deRefStablePtr sptr
             throwIO exc
 
-exceptionHaskellToObjC :: IO a -> IO (Ptr ObjCObject)
+exceptionHaskellToObjC :: IO a -> IO (Ptr ObjCException)
 exceptionHaskellToObjC action = 
     (action >> return nullPtr)
         `catches` [
-            Handler $ \(WrappedNSException exc) -> exportArgument exc,
+            Handler $ \(WrappedNSException exc) -> fmap castPtr (exportArgument exc),
             Handler $ \exc -> withCString (show exc) $ \cstr ->
                                 (newStablePtr (exc :: SomeException) 
                                     >>= wrapHaskellException cstr)

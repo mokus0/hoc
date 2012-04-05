@@ -13,7 +13,6 @@ module HOC.CBits
     , module HOC.CBits.NewClass
     , module HOC.CBits.ObjectMap
     , module HOC.CBits.RetainedHaskellPart
-    , module HOC.CBits.Selector
     , module HOC.CBits.Statistics
     , module HOC.CBits.Types
     ) where
@@ -29,7 +28,6 @@ import HOC.CBits.MsgSend
 import HOC.CBits.NewClass
 import HOC.CBits.ObjectMap
 import HOC.CBits.RetainedHaskellPart
-import HOC.CBits.Selector
 import HOC.CBits.Statistics
 import HOC.CBits.Types
 

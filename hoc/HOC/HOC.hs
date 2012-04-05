@@ -18,7 +18,7 @@ module HOC (
         Allocated,
         Inited,
 
-        getSelectorForName,
+        getSEL,
         
         withAutoreleasePool,
 
@@ -83,5 +83,5 @@ import HOC.ExternFunctions
 import HOC.Selectors
 import HOC.Exception
 import HOC.CStruct
-import Foreign.ObjC
+import Foreign.ObjC ( SEL, getSEL )
 import Foreign.LibFFI.Experimental

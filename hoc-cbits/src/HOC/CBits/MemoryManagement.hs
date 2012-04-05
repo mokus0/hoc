@@ -1,8 +1,8 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module HOC.CBits.MemoryManagement where
 
-import HOC.CBits.Types
 import Foreign.C.Types
+import Foreign.ObjC
 import Foreign.Ptr
 
 foreign import ccall "MemoryManagement.h retainObject"

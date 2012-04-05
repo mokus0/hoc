@@ -8,9 +8,9 @@ import Data.Maybe                   ( mapMaybe )
 import Data.Typeable                ( Typeable )
 import Foreign.C.String             ( newCString )
 import Foreign.LibFFI.Experimental  ( cif, CIF, pokeRet )
+import Foreign.ObjC                 ( getSEL )
 import Foreign.Ptr                  ( castPtr )
 import HOC.Arguments                ( objcOutRet, ForeignSel )
-import HOC.Base                     ( getSelectorForName )
 import HOC.CBits                    ( ID, nil, recordHOCEvent )
 import HOC.Class                    ( getClassByName )
 import HOC.Exception                ( exceptionHaskellToObjC )
@@ -203,7 +203,7 @@ mkClassExportAction name prefix members =
                 exportMethod' isClassMethod objCMethodList num
                               ([| getAsID |] `appE` varE (mkName ('_':ivarName)))
                               0 False (''GetVarImpType)
-                              [| getSelectorForName ivarName |]
+                              [| getSEL ivarName |]
                               [| getVarCif |]
                               [| False |]
             
@@ -211,7 +211,7 @@ mkClassExportAction name prefix members =
                 exportMethod' isClassMethod objCMethodList num
                               ([| setAsID |] `appE` varE (mkName ('_':ivarName)))
                               1 True (''SetVarImpType)
-                              [| getSelectorForName setterName |]
+                              [| getSEL setterName |]
                               [| setVarCif |]
                               [| False |]
             where

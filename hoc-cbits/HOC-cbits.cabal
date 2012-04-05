@@ -30,7 +30,6 @@ Library
                         HOC.CBits.NewClass
                         HOC.CBits.ObjectMap
                         HOC.CBits.RetainedHaskellPart
-                        HOC.CBits.Selector
                         HOC.CBits.Statistics
                         HOC.CBits.Types
     

@@ -2,7 +2,7 @@
 module HOC.CBits.Marshalling where
 
 import Data.Word
-import HOC.CBits.Types
+import Foreign.ObjC
 import Foreign.Ptr
 
 foreign import ccall safe "Marshalling.h nsStringToUTF8"

@@ -1,8 +1,8 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module HOC.CBits.Class where
 
-import HOC.CBits.Types
 import Foreign.C
+import Foreign.ObjC
 import Foreign.Ptr
 
 foreign import ccall unsafe objc_getClass   :: CString        -> IO (Ptr ObjCObject)

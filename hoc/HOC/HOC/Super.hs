@@ -6,10 +6,11 @@ module HOC.Super(
     ) where
 
 import Foreign.Marshal.Alloc    ( allocaBytes )
+import Foreign.ObjC             ( ObjCObject )
 import Foreign.Ptr              ( Ptr, nullPtr )
 import Foreign.Storable         ( pokeByteOff, sizeOf )
 import HOC.Arguments            ( ObjCArgument(..) )
-import HOC.CBits                ( ObjCObject, ID, castObject )
+import HOC.CBits                ( ID, castObject )
 import HOC.Class                ( RawStaticClass, rawStaticClassForObject )
 import HOC.MessageTarget        ( Object, MessageTarget(..) )
 import HOC.MsgSend

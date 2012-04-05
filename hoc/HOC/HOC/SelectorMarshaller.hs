@@ -10,12 +10,10 @@ module HOC.SelectorMarshaller(
 
 import Foreign                      ( withArray )
 import Foreign.LibFFI.Experimental  ( CIF, withOutArg )
-import Foreign.ObjC                 ( SEL )
+import Foreign.ObjC                 ( ObjCObject, SEL, getSEL )
 import Foreign.Ptr                  ( Ptr, castPtr )
 import GHC.Base                     ( unpackCString# )
 import HOC.Arguments                ( objcOutArg )
-import HOC.Base                     ( getSelectorForName )
-import HOC.CBits                    ( ObjCObject )
 import HOC.MessageTarget
 import HOC.TH
 import System.IO.Unsafe             ( unsafePerformIO )
@@ -23,19 +21,19 @@ import System.IO.Unsafe             ( unsafePerformIO )
 data SelectorInfo a = SelectorInfo {
         selectorInfoObjCName :: String,
         selectorInfoHaskellName :: String,
-        selectorInfoCif :: !(CIF (Ptr ObjCObject -> SEL -> a)),
-        selectorInfoSel :: !SEL,
+        selectorInfoCif :: !(CIF (Ptr ObjCObject -> SEL a -> a)),
+        selectorInfoSel :: !(SEL a),
         selectorInfoResultRetained :: !Bool
     }
 
 {-# NOINLINE mkSelectorInfo #-}
 mkSelectorInfo objCName hsName cif
-    = SelectorInfo objCName hsName cif (getSelectorForName objCName) False
+    = SelectorInfo objCName hsName cif (getSEL objCName) False
 
 {-# NOINLINE mkSelectorInfo# #-}
 mkSelectorInfo# objCName# hsName# cif
     -- NOTE: Don't call mkSelectorInfo here, the rule would apply!
-    = SelectorInfo objCName hsName cif (getSelectorForName objCName) False
+    = SelectorInfo objCName hsName cif (getSEL objCName) False
     where
         objCName = unpackCString# objCName#
         hsName   = unpackCString# hsName#
@@ -48,12 +46,12 @@ mkSelectorInfo# objCName# hsName# cif
 
 {-# NOINLINE mkSelectorInfoRetained #-}
 mkSelectorInfoRetained objCName hsName cif
-    = SelectorInfo objCName hsName cif (getSelectorForName objCName) True
+    = SelectorInfo objCName hsName cif (getSEL objCName) True
 
 {-# NOINLINE mkSelectorInfoRetained# #-}
 mkSelectorInfoRetained# objCName# hsName# cif
     -- NOTE: Don't call mkSelectorInfo here, the rule would apply!
-    = SelectorInfo objCName hsName cif (getSelectorForName objCName) True
+    = SelectorInfo objCName hsName cif (getSEL objCName) True
     where
         objCName = unpackCString# objCName#
         hsName   = unpackCString# hsName#

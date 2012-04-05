@@ -2,7 +2,7 @@
 module HOC.CBits.GetNewHaskellData where
 
 import Data.Dynamic
-import HOC.CBits.Types
+import Foreign.ObjC
 import Foreign.Ptr
 import Foreign.StablePtr
 

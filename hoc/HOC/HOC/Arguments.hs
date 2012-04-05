@@ -56,7 +56,7 @@ type instance DropSelTarget (a -> IO b) = IO b
 type instance DropSelTarget (a -> b -> c) = a -> DropSelTarget (b -> c)
 
 type family SelType a
-type instance SelType (a -> IO b) = a -> SEL -> IO b
-type instance SelType (a -> b -> c) = SelTarget (b -> c) -> SEL -> a -> DropSelTarget (b -> c)
+type instance SelType (a -> IO b) = a -> SEL (IO b) -> IO b
+type instance SelType (a -> b -> c) = SelTarget (b -> c) -> SEL (a -> DropSelTarget (b -> c)) -> a -> DropSelTarget (b -> c)
 
-type ForeignSel a = ForeignSig (SelType a)
+type ForeignSel a = SelType (ForeignSig a)
