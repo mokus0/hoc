@@ -6,8 +6,8 @@ module HOC.CBits.Types where
 import Data.Dynamic
 import Foreign.ForeignPtr
 import Foreign.Ptr
-import Foreign.LibFFI.Experimental hiding (Dynamic)
-import Foreign.ObjC
+import Foreign.LibFFI.Experimental  hiding (Dynamic)
+import Foreign.ObjC                 hiding (ObjCException)
 
 data ID a = ID HSO | Nil
 
