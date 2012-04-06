@@ -50,7 +50,6 @@ Library
   extra-libraries:      objc, ffi
   
   if os(darwin)
-    include-dirs:       /usr/include/ffi
     frameworks:         Foundation
     cpp-options:        -DMACOSX
     cc-options:         -DMACOSX
