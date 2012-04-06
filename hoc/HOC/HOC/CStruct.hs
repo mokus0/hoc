@@ -130,8 +130,6 @@ declareCStructWithTag cname mbTag fieldTypes
                             )
                     instance ArgType $(conT name)
                     instance RetType $(conT name)
-                    instance ObjCArg $(conT name)
-                    instance ObjCRet $(conT name)
                |]
     
         argDecl <- instanceD (cxt []) (conT ''ObjCArgument `appT` conT name) []
