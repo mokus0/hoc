@@ -9,11 +9,17 @@ module HOC.MsgSend(
 
 import Foreign.LibFFI.Experimental  ( CIF, RetType )
 import Foreign.ObjC                 ( ObjCObject, SEL )
-import Foreign.Ptr                  ( Ptr, castPtr )
-import Foreign.Storable             ( peek, poke, peekElemOff )
+import Foreign.Ptr                  ( Ptr )
 import HOC.Arguments                ( ObjCArgument, ForeignArg )
 import HOC.CBits
 import HOC.Invocation               ( callWithRetval, callWithoutRetval )
+
+#ifdef GNUSTEP
+
+import Foreign.Ptr                  ( castPtr )
+import Foreign.Storable             ( peek, poke, peekElemOff )
+
+#endif
 
 objSendMessageWithRetval
     :: (ObjCArgument ret, RetType (ForeignArg ret))
