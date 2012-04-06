@@ -21,7 +21,7 @@ static void objcIMP(ffi_cif *cif, void * ret, void **args, void *userData)
 static IMP newIMP(ffi_cif *cif, haskellIMP imp)
 {
     void *entry;
-    ffi_closure *closure = ffi_closure_alloc(sizeof(ffi_closure), &entry);
+    ffi_closure *closure = hs_ffi_closure_alloc(sizeof(ffi_closure), &entry);
     
     #if DO_LOG
     printf("newIMP(%p, %p) - closure = %p, entry = %p\n", cif, imp, closure, entry);
