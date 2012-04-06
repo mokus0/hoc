@@ -27,7 +27,7 @@ NSMapTable *getTheObjectMap()
 /* 
  * This gets the HSO, given a obj-c part of an object.
  */
-void *getHaskellPart(void* objcPart)
+HsStablePtr getHaskellPart(id objcPart)
 {
     void *hsPart = NSMapGet(getTheObjectMap(), objcPart);
 #if DO_LOG
@@ -36,7 +36,7 @@ void *getHaskellPart(void* objcPart)
     return hsPart;
 }
 
-void setHaskellPart(void* objcPart, void* haskellPart, int immortal)
+void setHaskellPart(id objcPart, HsStablePtr haskellPart, HsBool immortal)
 {   // assume that gObjectMap already exists
 #if DO_LOG
     NSLog(@"new %p -> %d (immortal: %d)", objcPart, haskellPart, immortal);
@@ -53,7 +53,7 @@ void setHaskellPart(void* objcPart, void* haskellPart, int immortal)
     return NSMapInsert(gObjectMap, objcPart, haskellPart);
 }
 
-void removeHaskellPart(void* objcPart, void* haskellPart)
+void removeHaskellPart(id objcPart, HsStablePtr haskellPart)
 {   // assume that gObjectMap already exists
     // don't remove if we no longer have the expected key
     // (finalizer ran to late and object was re-imported

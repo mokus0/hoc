@@ -1,9 +1,11 @@
 #ifndef __ObjectMap_h__
 #define __ObjectMap_h__
 
-void *getHaskellPart(void* objcPart);
-void setHaskellPart(void* objcPart, void* haskellPart, int immortal);
-void removeHaskellPart(void* objcPart, void* haskellPart);
+#include <HsFFI.h>
+
+HsStablePtr getHaskellPart(id objcPart);
+void setHaskellPart(id objcPart, HsStablePtr haskellPart, HsBool immortal);
+void removeHaskellPart(id objcPart, HsStablePtr haskellPart);
 
 void objectMapStatistics(unsigned *allocated, unsigned *immortal);
 
