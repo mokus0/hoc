@@ -20,7 +20,8 @@ static SEL selGetHaskellData = 0;
 void *getNewHaskellDataForClass(id obj, Class isa)
 {
     #if DO_LOG
-    printf("getNewHaskellDataForClass(%p, %p)\n", (void *) obj, (void *) isa);
+    printf("getNewHaskellDataForClass(%p, %s)\n",
+            (void *) obj, isa ? class_getName(isa) : "<null>");
     #endif
     
     struct objc_method *m;
@@ -49,6 +50,10 @@ void *getNewHaskellDataForClass(id obj, Class isa)
 
     if(m)
         imp = method_getImplementation(m);
+    
+    #if DO_LOG
+    printf("getNewHaskellDataForClass: m = %p, imp = %p\n", m, imp);
+    #endif
     
     if(imp)
         return (*(getHaskellDataIMP)imp)(obj, selGetHaskellData);

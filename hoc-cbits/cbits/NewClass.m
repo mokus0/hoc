@@ -16,8 +16,8 @@ static void addIvarsToClass(Class new_class, struct hoc_ivar_list *ivars)
         struct hoc_ivar *ivar = &ivars->ivar_list[i];
         
         #if DO_LOG
-        printf("adding ivar (%s, %s, %d, %d) to class %p\n", 
-            ivar->ivar_name, ivar->ivar_types, (int) ivar->ivar_size, (int) ivar->ivar_alignment, new_class);
+        printf("adding ivar (%s, %s, %d, %d) to class %s\n", 
+            ivar->ivar_name, ivar->ivar_types, (int) ivar->ivar_size, (int) ivar->ivar_alignment, class_getName(new_class));
         #endif
         
         class_addIvar(new_class, ivar->ivar_name,
@@ -33,8 +33,8 @@ static void addMethodsToClass(Class new_class, struct hoc_method_list *methods)
         struct hoc_method * m = &methods->method_list[i];
         
         #if DO_LOG
-        printf("adding method (%s, %s, %p) to class %p\n", 
-            sel_getName(m->method_name), m->method_types, m->method_imp, new_class);
+        printf("adding method (%s, %s, %p) to class %s\n", 
+            sel_getName(m->method_name), m->method_types, m->method_imp, class_getName(new_class));
         #endif
         
         class_addMethod(new_class, m->method_name, m->method_imp, m->method_types);

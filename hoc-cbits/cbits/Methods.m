@@ -7,6 +7,10 @@
 
 static void objcIMP(ffi_cif *cif, void * ret, void **args, void *userData)
 {
+    #if DO_LOG
+    printf("objcIMP(%p, %p, %p, %p)\n", cif, ret, args, userData);
+    #endif
+    
     recordHOCEvent(kHOCAboutToEnterHaskell, args);
     NSException *e = (*(haskellIMP)userData)(cif, ret, args);
     recordHOCEvent(kHOCLeftHaskell, args);
@@ -18,6 +22,11 @@ static IMP newIMP(ffi_cif *cif, haskellIMP imp)
 {
     void *entry;
     ffi_closure *closure = ffi_closure_alloc(sizeof(ffi_closure), &entry);
+    
+    #if DO_LOG
+    printf("newIMP(%p, %p) - closure = %p, entry = %p\n", cif, imp, closure, entry);
+    #endif
+    
     ffi_prep_closure_loc(closure, cif, &objcIMP, (void*) imp, entry);
     return (IMP) entry;
 }
@@ -40,6 +49,10 @@ void setMethodInList(
         haskellIMP imp
     )
 {   
+    #if DO_LOG
+    printf("setMethodInList(%p, %d, %s, %s, %p, %p)\n",
+        list, i, sel_getName(sel), types, cif, imp);
+    #endif
     setMethodInListWithIMP(list, i, sel, types, (IMP) newIMP(cif, imp) );
 }
 
@@ -51,6 +64,10 @@ void setMethodInListWithIMP(
         IMP imp
     )
 {
+    #if DO_LOG
+    printf("setMethodInListWithIMP(%p, %d, %s, %s, %p)\n",
+        list, i, sel_getName(sel), types, imp);
+    #endif
     list->method_list[i].method_name = sel;
     list->method_list[i].method_types = types;
     list->method_list[i].method_imp = imp;
