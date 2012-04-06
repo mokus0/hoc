@@ -4,8 +4,6 @@
 #include "Class.h"
 #include "GetNewHaskellData.h"
 
-#include "Log.h"
-
 /*
     Why don't we use normal Objective-C messaging?
     Because the object in question might not implement __getHaskellData__.

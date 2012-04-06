@@ -1,11 +1,9 @@
-#include <stdlib.h>
-#include <sys/mman.h>
 #include "Methods.h"
 #include "Statistics.h"
-
-#ifdef __OBJC__
+#include <hs_libffi_closure.h>
+#include <stdlib.h>
+#include <sys/mman.h>
 #import <Foundation/NSException.h>
-#endif
 
 static void objcIMP(ffi_cif *cif, void * ret, void **args, void *userData)
 {
