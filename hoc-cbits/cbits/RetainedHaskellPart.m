@@ -8,9 +8,9 @@
 #include "RetainedHaskellPart.h"
 #include "Ivars.h"
 
-void* getRetainedHaskellPart(id obj)
+HsStablePtr getRetainedHaskellPart(id obj)
 {
-    void *haskellPart = NULL;
+    HsStablePtr haskellPart = NULL;
     struct objc_ivar *ivar = object_getInstanceVariable( obj,
                                             "__retained_haskell_part__",
                                             &haskellPart );
@@ -18,7 +18,7 @@ void* getRetainedHaskellPart(id obj)
     return haskellPart;
 }
 
-void setRetainedHaskellPart(id obj, void* haskellPart)
+void setRetainedHaskellPart(id obj, HsStablePtr haskellPart)
 {
     struct objc_ivar *ivar = object_setInstanceVariable( obj,
                                             "__retained_haskell_part__",

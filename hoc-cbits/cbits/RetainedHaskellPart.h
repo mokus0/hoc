@@ -2,8 +2,9 @@
 #define __RetainedHaskellPart_h__
 
 #include "Common.h"
+#include <HsFFI.h>
 
-void* getRetainedHaskellPart(id obj);
-void setRetainedHaskellPart(id obj, void* haskellPart);
+HsStablePtr getRetainedHaskellPart(id obj);
+void setRetainedHaskellPart(id obj, HsStablePtr haskellPart);
 
 #endif /* __RetainedHaskellPart_h__ */

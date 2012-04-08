@@ -13,11 +13,14 @@
     Because the object might not even descend from NSObject.
 */
     
-typedef void * (*getHaskellDataIMP)(id target, SEL sel);
+typedef HsStablePtr (*getHaskellDataIMP)(id target, SEL sel);
 
 static SEL selGetHaskellData = 0;
 
-void *getNewHaskellDataForClass(id obj, Class isa)
+// Like [obj __getHaskellData__] but _only_ searching the given
+// class for an implementation ('obj' should be an instance of 
+// 'isa')
+HsStablePtr getNewHaskellDataForClass(id obj, Class isa)
 {
     #if DO_LOG
     printf("getNewHaskellDataForClass(%p, %s)\n",
@@ -34,18 +37,6 @@ void *getNewHaskellDataForClass(id obj, Class isa)
     if(!selGetHaskellData)
         selGetHaskellData = sel_registerName("__getHaskellData__");
     
-// #ifdef GNUSTEP
-//         // first, use objc_msg_lookup to make sure
-//         // that the objc runtime has inited everything
-//         // TODO: find out whether this is really necessary (it doesn't seem to be), 
-//         //  and if so figure out a way to achieve the same goal without spewing 
-//         //  warnings all over the console.
-//     objc_msg_lookup(obj, selGetHaskellData);
-// #endif
-    
-        // Now find the right method.
-        // We don't want to use objc_msg_lookup_super because 
-        // we don't want our message to be forwarded.
     m = class_getInstanceMethod(isa, selGetHaskellData);
 
     if(m)
@@ -62,7 +53,9 @@ void *getNewHaskellDataForClass(id obj, Class isa)
 }
 
 
-void *getNewHaskellData(id obj)
+// Like [obj __getHaskellData__] but _only_ searching the object's
+// most-specific class for an implementation.
+HsStablePtr getNewHaskellData(id obj)
 {
     #if DO_LOG
     printf("getNewHaskellData(%p)\n", (void *) obj);

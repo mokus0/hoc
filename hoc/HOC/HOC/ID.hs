@@ -184,7 +184,11 @@ haskellObject_retain self super = do
                         -- from Haskell, it is retained and autoreleased, so passing an
                         -- object from Haskell to Objective C and immediately forgetting
                         -- the reference (before ObjC has a chance to retain it) is safe.
-                
+                        
+                        -- Hmmm...  it's probably a REALLY bad idea to throw an error
+                        -- here.  This code is invoked by libffi without an exception 
+                        -- wrapper...  Instead we need to return something other than 
+                        -- 'nullPtr' up in haskellObject_retain_IMP.
                         error "Error: Retaining Haskell Object that has already been released"
 
 

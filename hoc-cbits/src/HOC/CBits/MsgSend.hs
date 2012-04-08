@@ -2,7 +2,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module HOC.CBits.MsgSend where
 
-import HOC.CBits.Types
 import Foreign.ObjC
 import Foreign.Ptr
 

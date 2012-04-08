@@ -2,8 +2,9 @@
 #define __GetNewHaskellData_h__
 
 #include "Common.h"
+#include <HsFFI.h>
 
-void *getNewHaskellDataForClass(id obj, Class isa);
-void *getNewHaskellData(id obj);
+HsStablePtr getNewHaskellDataForClass(id obj, Class isa);
+HsStablePtr getNewHaskellData(id obj);
 
 #endif /* __GetNewHaskellData_h__ */
