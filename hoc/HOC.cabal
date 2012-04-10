@@ -5,12 +5,8 @@ license-file:           LICENSE
 cabal-version:          >= 1.9.2
 build-type:             Simple
 
-Flag BinaryInterfaces
-  description:          write HOC interface generator files in binary format
-                        (requires binary package)
-
 Library
-  hs-source-dirs:       HOC
+  hs-source-dirs:       src
   ghc-options:          -fwarn-unused-imports
                         -fwarn-unused-binds
   
@@ -60,32 +56,10 @@ Library
   else
     cpp-options:        -DGNUSTEP
 
-Executable hoc-ifgen
-  main-is:              Main.hs
-  hs-source-dirs:       HOC, InterfaceGenerator2
-  
-  build-depends:        base >= 4,
-                        bytestring,
-                        containers,
-                        directory,
-                        fgl,
-                        filepath,
-                        gnustep-config,
-                        mtl,
-                        old-time,
-                        parsec >= 3.0,
-                        pretty,
-                        syb,
-                        template-haskell
-  
-  if flag(BinaryInterfaces)
-    build-depends:      binary >= 0.2
-    cpp-options:        -DBINARY_INTERFACES
-
 Test-Suite hoc-test
   type:                 exitcode-stdio-1.0
   main-is:              Test.hs
-  hs-source-dirs:       HOC, InterfaceGenerator2, Tests
+  hs-source-dirs:       src, tests
   
   build-depends:        base >= 4,
                         containers,

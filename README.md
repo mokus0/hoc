@@ -1,6 +1,10 @@
 About HOC
 =========
 
+(Note that this README is out of date.  The project is currently under
+heavy development and the documentation will not be updated until the
+new design is finalized)
+
 HOC is a Haskell to Objective-C binding. In a nutshell, it enables you to
 use Objective-C objects and frameworks from Haskell, and also enables you
 to write Objective-C objects in Haskell.
@@ -37,39 +41,39 @@ platforms).  You'll thus have to build HOC from source code.
 
 1. Build the HOC library and the interface generator:
 
-  runhaskell Setup.hs configure
-  runhaskell Setup.hs build
-  sudo runhaskell Setup.hs install
-
-To run the unit tests, use:
-
-  runhaskell Setup.hs configure -fTests
-  runhaskell Setup.hs build
-  ./dist/build/hoc-test/hoc-test
-  sudo runhaskell Setup.hs install
+        runhaskell Setup.hs configure
+        runhaskell Setup.hs build
+        sudo runhaskell Setup.hs install
+    
+    To run the unit tests, use:
+    
+        runhaskell Setup.hs configure -fTests
+        runhaskell Setup.hs build
+        ./dist/build/hoc-test/hoc-test
+        sudo runhaskell Setup.hs install
 
 2. Create the bindings:
-  
-  cd Bindings
-  sudo HOC_SDK=MacOSX10.5 sh make-bindings-macos.sh
-  cd ..
+    
+        cd Bindings
+        sudo HOC_SDK=MacOSX10.5 sh make-bindings-macos.sh
+        cd ..
   
 3. Build the hoc-wrap tool:
   
-  cd Tools
-  runhaskell Setup.hs configure
-  runhaskell Setup.hs build
-  sudo runhaskell Setup.hs install
-  cd ..  
+        cd Tools
+        runhaskell Setup.hs configure
+        runhaskell Setup.hs build
+        sudo runhaskell Setup.hs install
+        cd ..  
 
 
-Depending on your setup, you might be able to leae out the "sudo".
+Depending on your setup, you might be able to leave out the "sudo".
 You can also add additional Cabal configure options after "configure"
 commands, and after "sh make-bindings-macos.sh" (like, e.g. --user).
 
 Authors
 =======
 
-Wolfgang Thaller <wolfgang.thaller@gmx.net>
-Andre Pang <ozone@algorithm.com.au>
+Wolfgang Thaller (wolfgang.thaller@gmx.net)
+Andre Pang (ozone@algorithm.com.au)
 

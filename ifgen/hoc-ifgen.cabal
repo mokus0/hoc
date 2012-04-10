@@ -1,0 +1,56 @@
+name:                   hoc-ifgen
+version:                1.0
+license:                BSD4
+license-file:           LICENSE
+cabal-version:          >= 1.9.2
+build-type:             Simple
+
+Flag BinaryInterfaces
+  description:          write HOC interface generator files in binary format
+                        (requires binary package)
+
+Executable hoc-ifgen
+  main-is:              Main.hs
+  hs-source-dirs:       src
+  
+  build-depends:        base >= 4,
+                        bytestring,
+                        containers,
+                        directory,
+                        fgl,
+                        filepath,
+                        gnustep-config,
+                        HOC,
+                        mtl,
+                        old-time,
+                        parsec >= 3.0,
+                        pretty,
+                        syb,
+                        template-haskell
+  
+  if flag(BinaryInterfaces)
+    build-depends:      binary >= 0.2
+    cpp-options:        -DBINARY_INTERFACES
+
+Test-Suite hoc-ifgen-test
+  type:                 exitcode-stdio-1.0
+  main-is:              Test.hs
+  hs-source-dirs:       src, tests
+  
+  build-depends:        base >= 4,
+                        containers,
+                        libffi-experiments,
+                        HOC-cbits,
+                        HUnit,
+                        mtl,
+                        objc-ffi,
+                        parsec >= 3,
+                        syb,
+                        template-haskell,
+                        th-extras,
+                        unix
+  
+  if os(darwin)
+    cpp-options:        -DMACOSX
+  else
+    cpp-options:        -DGNUSTEP
