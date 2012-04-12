@@ -7,7 +7,7 @@ import Data.Dynamic
 import Foreign.ForeignPtr
 import Foreign.Ptr
 import Foreign.LibFFI.Experimental  hiding (Dynamic)
-import Foreign.ObjC                 hiding (ObjCException)
+import Foreign.ObjC                 hiding (ObjCException, Class)
 
 data ID a = ID HSO | Nil
 
