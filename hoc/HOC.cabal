@@ -39,7 +39,6 @@ Library
                         HOC.MessageTarget
                         HOC.Invocation
                         HOC.MsgSend
-                        HOC.NewClass
                         HOC.NewlyAllocated
                         HOC.SelectorMarshaller
                         HOC.Selectors

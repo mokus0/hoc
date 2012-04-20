@@ -27,16 +27,16 @@ testTextFile = "HOC.cabal"
 performGCAndWait targetCount time maxRepeat = do
     performGC
     threadDelay time
-    (objects', immortal') <- objectMapStatistics
+    (objects', immortal') <- getHOCImportStats
     when (objects' - immortal' > targetCount && maxRepeat > 0) $
         performGCAndWait targetCount time (maxRepeat - 1)
     
 assertLeaks leaks action = do
-    (objects, immortal) <- objectMapStatistics
+    (objects, immortal) <- getHOCImportStats
     let targetCount = objects - immortal + leaks
     result <- action `finally` performGCAndWait targetCount 10000 25
     
-    (objects', immortal') <- objectMapStatistics
+    (objects', immortal') <- getHOCImportStats
     assertEqual "Live objects after allocation,"
                 targetCount (objects' - immortal')
     return result
@@ -229,7 +229,7 @@ tests = test [
                 hobj <- _HaskellObjectWithOutlet # alloc >>= init
                 hobj # setOtherObject num
                 num' <- hobj # otherObject >>= return . castObject
-                when (num /= num') $ assert "Different Object returned."
+                assertEqual "Different Object returned." num num'
             ),
             "set-forget-reget" ~: (assertNoLeaks $ do
                 -- set an ivar, 'forget' the object (stash it outside haskell-space),
@@ -237,21 +237,28 @@ tests = test [
                 
                 -- this catches a class of bug which helped me grok HSOs ;-)
                 
-                (num, array) <- assertLeaks 3 $ do
-                    num <- _NSNumber # alloc >>= initWithInt 42
-                    hobj <- _HaskellObjectWithOutlet # alloc >>= init
-                    hobj # setOtherObject num
+                (num, array) <- assertLeaks 5 $ do
+                    num <- _NSNumber # alloc >>= initWithInt 42         -- 1 import
+                    hobj <- _HaskellObjectWithOutlet # alloc >>= init   -- 1 import
+                    hobj # setOtherObject num   -- 2 imports (self and arg in method body)
                     
-                    array <- _NSMutableArray # alloc >>= init
-                    array # addObject hobj
+                    array <- _NSMutableArray # alloc >>= init           -- 1 import
+                    array # addObject hobj                              -- 0 imports
                     
                     return (num, array)
+                    -- 0 releases: 1st 'num' is held by return, 2nd 'num' is held
+                    -- by hobj, both 'hobj' refs are the same HSO, and 'array' is
+                    -- held by return.
                 
-                assertLeaks (-3) $ do
+                assertLeaks (-5) $ do
                     hobj <- array # objectAtIndex 0 :: IO (HaskellObjectWithOutlet ())
+                        -- 1 import
                     
                     num' <- hobj # otherObject >>= return . castObject
-                    when (num /= num') $ assert "Different Object returned."
+                        -- 2 imports (hobj as 'self', num' as return val)
+                    
+                    assertEqual "Different Object returned." num num'
+                    -- array should now be released, triggering release of hobj and num.
             ),
             "set-get-maybeString" ~: (assertNoLeaks $ do
                 hobj <- _HaskellObjectWithOutlet # alloc >>= init
@@ -272,7 +279,7 @@ tests = test [
                 hobj <- _HaskellObjectWithIVar # alloc >>= init
                 hobj # setOtherObject num
                 num' <- hobj # otherObject >>= return . castObject
-                when (num /= num') $ assert "Different Object returned."
+                assertEqual "Different Object returned." num num'
             ),
             "set-get" ~: (assertNoLeaks $ do
                 hobj <- _HaskellObjectWithIVar # alloc >>= init
@@ -289,10 +296,14 @@ tests = test [
                 array2 # addObject array1
             ),
             "NSMutableArray-Circle-with-Haskell" ~: (assertLeaks 2 $ do
-                hobj <- _HaskellObjectWithOutlet # alloc >>= init
-                array <- _NSMutableArray # alloc >>= init
-                array # addObject hobj
-                hobj # setOtherObject array
+                hobj <- _HaskellObjectWithOutlet # alloc >>= init   -- 1 import
+                array <- _NSMutableArray # alloc >>= init           -- 1 import
+                array # addObject hobj                              -- 0 imports
+                hobj # setOtherObject array                         -- 2 imports
+                
+                -- 1 release (the original 'array').
+                -- 'hobj' (2 imports) is held by the array
+                -- the array (its second import) is held by hobj.
             ),
             "HaskellObjectCircle" ~: (assertNoLeaks $ do
                 hobj1 <- _HaskellObjectWithOutlet # alloc >>= init

@@ -1,8 +1,4 @@
 #include "Common.h"
-#include "NewClass.h"
-#include "Class.h"
-#include "Ivars.h"
-#include "Methods.h"
 #include "Marshalling.h"
 #include "HsFFI.h"
 
@@ -18,20 +14,12 @@ static SEL selDealloc;
 
 static void exc_dealloc(id self, SEL sel)
 {
-    HsStablePtr sp = * (HsStablePtr*) (((char*)self) + stablePtrOffset);
-    struct objc_super super;
-
-    hs_free_stable_ptr(sp);
+    hs_free_stable_ptr(* (HsStablePtr*) (((char*)self) + stablePtrOffset));
+    struct objc_super super = {self, class_getSuperclass(object_getClass(self))};
     
 #if GNUSTEP
-    super.self = self;
-    super.class = getSuperClassForObject(self);
-    
     objc_msg_lookup_super(&super, selDealloc)(self, selDealloc);
 #else
-    super.receiver = self;
-    super.super_class = getSuperClassForObject(self);
-
     objc_msgSendSuper(&super, selDealloc);
 #endif
 }
@@ -40,28 +28,26 @@ static void initExceptionWrapper()
 {
     if(!excWrapperInited)
     {
-        struct hoc_method_list *methods = makeMethodList(1);
-        struct hoc_method_list *class_methods = makeMethodList(0);
-        struct hoc_ivar_list *ivars = makeIvarList(1);
         struct objc_ivar *stablePtrIvar;
         
         selDealloc = sel_registerName("dealloc");
         
-        setMethodInListWithIMP(methods, 0, selDealloc, "v@:", (IMP) &exc_dealloc);
+        clsHOCHaskellException = objc_allocateClassPair(
+                objc_getClass("NSException"),
+                "HOCHaskellException", 0);
         
-        setIvarInList(ivars, 0, hsExceptionIvarName, "^v", sizeof(void *), IVAR_PTR_ALIGN);
-      
-        newClass(objc_getClass("NSException"),
-                hsExceptionClassName,
-                ivars, methods, class_methods);
+        class_addMethod(clsHOCHaskellException, selDealloc, (IMP) &exc_dealloc, "v@:");
+        class_addIvar(clsHOCHaskellException, hsExceptionIvarName, sizeof(void *), 8, "^v");
+            // the alignment parameter here is wrong... will be fixed when this code is
+            // replaced by the version in the eobjc-ffi package.
         
-        clsHOCHaskellException = objc_getClass("HOCHaskellException");
+        objc_registerClassPair(clsHOCHaskellException);
         
         stablePtrIvar = class_getInstanceVariable(clsHOCHaskellException, hsExceptionIvarName);
         stablePtrOffset = ivar_getOffset(stablePtrIvar);
         
         selExceptionWithNameReasonUserInfo = sel_registerName("exceptionWithName:reason:userInfo:");
-                
+        
         excWrapperInited = YES;
     }
 }

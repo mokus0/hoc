@@ -4,10 +4,10 @@ module HOC.MessageTarget where
 
 import Control.Monad                ( when )
 import Foreign.LibFFI.Experimental  ( CIF, RetType )
-import Foreign.ObjC                 ( ObjCObject, SEL )
+import Foreign.ObjC                 ( ObjCObject, SEL, releaseObject )
 import Foreign.Ptr                  ( Ptr, nullPtr )
 import HOC.Arguments                ( ObjCArgument(..) )
-import HOC.CBits                    ( ID(..), nil, releaseObject )
+import HOC.CBits                    ( ID(..), nil )
 import HOC.MsgSend                  ( objSendMessageWithRetval, objSendMessageWithoutRetval )
 
 class (ObjCArgument a, ForeignArg a ~ Ptr ObjCObject) => MessageTarget a where
@@ -41,6 +41,8 @@ instance Object (ID a) where
     fromID (ID a) = ID a
     fromID Nil = Nil
 
+-- called when importing 'Inited' objects to offset the extra
+-- retain such objects have.
 releaseExtraReference :: MessageTarget a => a -> IO a
 releaseExtraReference obj
     = withExportedArgument obj (\ptr -> when (ptr /= nullPtr) (releaseObject ptr))

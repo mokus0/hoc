@@ -60,19 +60,17 @@ module HOC (
         declareCStruct,
         declareCStructWithTag,
         
-        -- debugging & statistics:
-        
-        objectMapStatistics
+        getHOCImportStats
     ) where
 
 import HOC.CBits
 import HOC.Arguments
-import HOC.ID
 import HOC.MessageTarget
 import HOC.Class
 import HOC.DeclareClass
 import HOC.DeclareSelector
 import HOC.ExportClass
+import HOC.ID
 import HOC.Utilities
 import HOC.NewlyAllocated
 import HOC.Super

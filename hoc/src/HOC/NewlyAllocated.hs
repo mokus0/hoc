@@ -23,8 +23,8 @@ import HOC.MsgSend
 import HOC.Super        ( Super(super), SuperClass, withExportedSuper )
 
 data NewlyAllocated a
-    = NewlyAllocated (Ptr ObjCObject)
-    | NewSuper (Ptr ObjCObject) (Class ())
+    = NewlyAllocated {-# UNPACK #-} !(Ptr ObjCObject)
+    | NewSuper       {-# UNPACK #-} !(Ptr ObjCObject) !(Class ())
 
 instance ObjCArgument (NewlyAllocated a) where
     type ForeignArg (NewlyAllocated a) = Ptr ObjCObject

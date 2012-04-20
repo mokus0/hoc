@@ -6,7 +6,7 @@ module HOC.Super(
     ) where
 
 import Foreign.Marshal.Alloc    ( allocaBytes )
-import Foreign.ObjC             ( ObjCObject )
+import Foreign.ObjC             ( ObjCClass, ObjCObject )
 import Foreign.Ptr              ( Ptr, nullPtr )
 import Foreign.Storable         ( pokeByteOff, sizeOf )
 import HOC.Arguments            ( ObjCArgument(..) )
@@ -26,7 +26,7 @@ import HOC.MsgSend
 -- super, which is sufficient to define a class hierarchy.
 class SuperClass sub super | sub -> super
 
-data SuperTarget a = SuperTarget a (Ptr ObjCObject)
+data SuperTarget a = SuperTarget a (Ptr ObjCClass)
 
 class Super sub super | sub -> super where
     super :: sub -> super

@@ -1,5 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
-module HOC.CannedCIFs where
+module HOC.CannedCIFs 
+    ( makeCannedCIFs
+    , staticCifForSelectorType
+    ) where
 
 import Control.Arrow                ( first )
 import Data.List                    ( intersperse )

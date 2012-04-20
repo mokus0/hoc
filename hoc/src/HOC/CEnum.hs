@@ -1,6 +1,9 @@
 {-# LANGUAGE TemplateHaskell, RankNTypes #-}
-module HOC.CEnum(CEnum(fromCEnum, toCEnum), declareCEnum, declareAnonymousCEnum)
-    where
+module HOC.CEnum
+    ( CEnum(fromCEnum, toCEnum)
+    , declareCEnum
+    , declareAnonymousCEnum
+    ) where
 
 import Foreign.C        ( CInt )
 import HOC.Arguments    ( ObjCArgument(..) )

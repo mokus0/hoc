@@ -1,7 +1,10 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TemplateHaskell #-}
-module HOC.CStruct( declareCStruct, declareCStructWithTag ) where
+module HOC.CStruct
+    ( declareCStruct
+    , declareCStructWithTag
+    ) where
 
 import Control.Monad.State
 import Data.Maybe           ( fromMaybe )

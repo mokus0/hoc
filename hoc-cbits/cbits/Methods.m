@@ -18,7 +18,7 @@ static void objcIMP(ffi_cif *cif, void * ret, void **args, void *userData)
         [e raise];
 }
 
-static IMP newIMP(ffi_cif *cif, haskellIMP imp)
+IMP newIMP(ffi_cif *cif, haskellIMP imp)
 {
     void *entry;
     ffi_closure *closure = hs_ffi_closure_alloc(sizeof(ffi_closure), &entry);
@@ -29,46 +29,4 @@ static IMP newIMP(ffi_cif *cif, haskellIMP imp)
     
     ffi_prep_closure_loc(closure, cif, &objcIMP, (void*) imp, entry);
     return (IMP) entry;
-}
-
-struct hoc_method_list * makeMethodList(int n)
-{
-    struct hoc_method_list *list = 
-        calloc(1, sizeof(struct hoc_method_list)
-                  + (n-1) * sizeof(struct hoc_method));
-    list->method_count = n;
-    return list;
-}
-
-void setMethodInList(
-        struct hoc_method_list *list,
-        int i,
-        SEL sel,
-        char *types,
-        ffi_cif *cif,
-        haskellIMP imp
-    )
-{   
-    #if DO_LOG
-    printf("setMethodInList(%p, %d, %s, %s, %p, %p)\n",
-        list, i, sel_getName(sel), types, cif, imp);
-    #endif
-    setMethodInListWithIMP(list, i, sel, types, (IMP) newIMP(cif, imp) );
-}
-
-void setMethodInListWithIMP(
-        struct hoc_method_list *list,
-        int i,
-        SEL sel,
-        char *types,
-        IMP imp
-    )
-{
-    #if DO_LOG
-    printf("setMethodInListWithIMP(%p, %d, %s, %s, %p)\n",
-        list, i, sel_getName(sel), types, imp);
-    #endif
-    list->method_list[i].method_name = sel;
-    list->method_list[i].method_types = types;
-    list->method_list[i].method_imp = imp;
 }

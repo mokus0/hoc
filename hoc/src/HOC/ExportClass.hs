@@ -6,18 +6,16 @@ import Data.Char                    ( toUpper )
 import Data.Dynamic                 ( toDyn, fromDynamic )
 import Data.Maybe                   ( mapMaybe )
 import Data.Typeable                ( Typeable )
-import Foreign.C.String             ( newCString )
 import Foreign.LibFFI.Experimental  ( cif, CIF, pokeRet )
-import Foreign.ObjC                 ( getSEL )
+import Foreign.ObjC
+import Foreign.ObjC.HSObject
 import Foreign.Ptr                  ( castPtr )
 import HOC.Arguments                ( objcOutRet, ForeignSel )
-import HOC.CBits                    ( ID, nil, recordHOCEvent )
-import HOC.Class                    ( getClassByName )
+import HOC.CBits                    ( ID, nil, recordHOCEvent, wrapHsIMP, newIMP )
 import HOC.Exception                ( exceptionHaskellToObjC )
-import HOC.ID                       ( getHaskellDataForID )
+import HOC.ID                       ( getHaskellDataForID  )
 import HOC.Invocation
 import HOC.MessageTarget            ( Object(..) )
-import HOC.NewClass
 import HOC.SelectorMarshaller       ( SelectorInfo(..) )
 import HOC.TH
 
@@ -77,7 +75,7 @@ exportClass name prefix members = sequence $ [
                             `appT` clsTy `appT` instTy) 
                 [
 --                  All we want to do is this:
---                      initializeInstanceVariables = $(initIVars)
+--                      initializeInstanceVariables = $initIVars
 --                  But we want the name initializeInstanceVariables refer directly
 --                  to this module, so that we don't have to export it, but keep it
 --                  private.
@@ -109,10 +107,10 @@ exportClass name prefix members = sequence $ [
                                 (varE $ mkName $ "arg" ++ show n)
                 args n = [ mkVarP (n == i) $ "arg" ++ show i | i <- [1..nIVars] ]
         
-        initIVars = doE (map initIVar ivars ++ [noBindS [| return $(wrap) |]])
+        initIVars = doE (map initIVar ivars ++ [noBindS [| return $wrap |]])
             where
                 wrap = foldl appE (conE $ mkName instanceDataName) (map (varE.mkName) ivarNames)
-                initIVar (ivar,ty,initial) = bindS (varP $ mkName ivar) [| newMVar $(initial) |]
+                initIVar (ivar,ty,initial) = bindS (varP $ mkName ivar) [| newMVar $initial |]
 
 -- | Declare a variable (with a preceeding _ unless it is used)
 mkVarP :: Bool -> String -> PatQ
@@ -125,19 +123,13 @@ data Method = ImplementedMethod Name
 mkClassExportAction name prefix members =
         [| 
             do
-                super <- getClassByName $(varE $ mkName $ "super_" ++ name)
-                ivars <- makeDefaultIvarList
-                imethods <- makeMethodList (nIMethods+3)
-                cmethods <- makeMethodList nCMethods
-                setHaskellRetainMethod  imethods 0 super
-                setHaskellReleaseMethod imethods 1 super
-                setHaskellDataMethod imethods 2 super (
-                        Just ($(typedInitIvars) >>= return . toDyn)
-                    )
-                $(fillMethodList False 3 [|imethods|] instanceMethods) 
-                $(fillMethodList True 0 [|cmethods|] classMethods)
-                clsname <- newCString name
-                newClass super clsname ivars imethods cmethods
+                super <- objc_getClass $(varE $ mkName $ "super_" ++ name)
+                cls   <- objc_allocateClassPair super name 0
+                meta  <- object_getClass (castPtr cls)
+                $(addMethods False [| cls  |] instanceMethods) 
+                $(addMethods True  [| meta |] classMethods)
+                
+                registerHSObjectClass cls (Just ($typedInitIvars >>= return . toDyn))
         |]
     where
         typedInitIvars = [|initializeInstanceVariables|]
@@ -160,14 +152,11 @@ mkClassExportAction name prefix members =
         nCMethods = length classMethods
         
             -- GHC fails with Prelude.last if we pass it an empty doE
-        fillMethodList isClassMethod firstIdx objCMethodList [] = [| return () |]  
-        fillMethodList isClassMethod firstIdx objCMethodList methods =
-            doE $
-            map (noBindS . exportMethod isClassMethod objCMethodList)
-                (zip methods [firstIdx..])
+        addMethods isClassMethod clsE [] = [| return () |]  
+        addMethods isClassMethod clsE methods =
+            doE (map (noBindS . addMethod isClassMethod clsE) methods)
                 
-        exportMethod isClassMethod objCMethodList
-                     (ImplementedMethod selName, num)
+        addMethod isClassMethod clsE (ImplementedMethod selName)
             = do
                 VarI _ t _ _ <- reify $ selName
                 let arrowsToList (AppT (AppT ArrowT a) b)
@@ -182,7 +171,7 @@ mkClassExportAction name prefix members =
                     nArgs = length ts - 2  -- subtract target and result
                     isUnit = last ts == ConT ''()
                 
-                exportMethod' isClassMethod objCMethodList num methodBody
+                addMethod' isClassMethod clsE methodBody
                               nArgs isUnit impTypeName selExpr cifExpr
                               retainedExpr
             where
@@ -199,16 +188,16 @@ mkClassExportAction name prefix members =
                 cifExpr = [| selectorInfoCif $(varE $ infoName) |]
                 retainedExpr = [| selectorInfoResultRetained $(varE $ infoName) |]
         
-        exportMethod isClassMethod objCMethodList (GetterMethod ivarName, num) =
-                exportMethod' isClassMethod objCMethodList num
+        addMethod isClassMethod clsE (GetterMethod ivarName) =
+                addMethod' isClassMethod clsE
                               ([| getAsID |] `appE` varE (mkName ('_':ivarName)))
                               0 False (''GetVarImpType)
                               [| getSEL ivarName |]
                               [| getVarCif |]
                               [| False |]
             
-        exportMethod isClassMethod objCMethodList (SetterMethod ivarName, num) =
-                exportMethod' isClassMethod objCMethodList num
+        addMethod isClassMethod clsE (SetterMethod ivarName) =
+                addMethod' isClassMethod clsE
                               ([| setAsID |] `appE` varE (mkName ('_':ivarName)))
                               1 True (''SetVarImpType)
                               [| getSEL setterName |]
@@ -221,18 +210,16 @@ mkClassExportAction name prefix members =
         setterNameForH ivarName = "set" ++ toUpper (head ivarName) : tail ivarName
             
                 
-        exportMethod' isClassMethod objCMethodList num methodBody
-                       nArgs isUnit impTypeName selExpr cifExpr retainedExpr =
-            [|
-                setMethodInList $(objCMethodList)
-                                num
-                                $(selExpr)
-                                $(cifExpr)
-                                ($(lamE (map (uncurry mkVarP) [(False,"cif"),(not isUnit,"ret"),(True,"args")]) marshal))
+        addMethod' isClassMethod clsE methodBody
+                       nArgs isUnit impTypeName selE cifExpr retainedExpr =
+            [| do
+                    hsImp <- wrapHsIMP $(lamE (map (uncurry mkVarP) [(False,"cif"),(not isUnit,"ret"),(True,"args")]) marshal)
+                    imp   <- newIMP $cifExpr hsImp
+                    class_addMethod $clsE $selE imp
             |]
             where
                 marshal = [| do recordHOCEvent kHOCEnteredHaskell $(varE $ mkName "args")
-                                exc <- exceptionHaskellToObjC $(marshal')
+                                exc <- exceptionHaskellToObjC $marshal'
                                 recordHOCEvent kHOCAboutToLeaveHaskell $(varE $ mkName "args")
                                 return exc
                           |]
@@ -250,7 +237,7 @@ mkClassExportAction name prefix members =
                     | isUnit =
                         typedBodyWithArgs
                     | otherwise =
-                        [| do result <- $(typedBodyWithArgs)
+                        [| do result <- $typedBodyWithArgs
                               recordHOCEvent kHOCAboutToExportResult $(varE $ mkName "args")
                               pokeRet (objcOutRet $retainedExpr) (castPtr $(varE $ mkName "ret")) result
                         |]

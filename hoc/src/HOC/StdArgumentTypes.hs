@@ -8,7 +8,7 @@ import Control.Exception        ( bracket )
 import Foreign.Ptr              ( Ptr, nullPtr )
 import Foreign.Marshal.Array    ( peekArray0, withArray0 )
 import Foreign.C.Types
-import Foreign.ObjC             ( ObjCObject, SEL )
+import Foreign.ObjC             ( ObjCObject, SEL, releaseObject, autoreleaseObject )
 import HOC.Arguments            ( ObjCArgument(..) )
 import HOC.CBits
 import HOC.Unicode              ( unicodeToUtf8, utf8ToUnicode )
