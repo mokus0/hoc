@@ -70,6 +70,8 @@ Test-Suite hoc-test
                         parsec >= 3,
                         syb,
                         template-haskell,
+                        test-framework,
+                        test-framework-hunit,
                         th-extras,
                         unix
   

@@ -2,8 +2,12 @@ module Main where
 
 import qualified TestFoundation
 
-import Test.HUnit
+import Test.Framework (defaultMain, testGroup)
 
 import HOC.CBits( withAutoreleasePool )
 
-main = withAutoreleasePool $ runTestTT $ TestFoundation.tests
+main = do
+    TestFoundation.initializeHsClasses
+    withAutoreleasePool $ defaultMain
+        [ testGroup "TestFoundation" TestFoundation.tests
+        ]
