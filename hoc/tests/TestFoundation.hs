@@ -26,18 +26,17 @@ testTextFile = "HOC.cabal"
 performGCAndWait targetCount time maxRepeat = do
     performGC
     threadDelay time
-    (objects', immortal') <- getHOCImportStats
-    when (objects' - immortal' > targetCount && maxRepeat > 0) $
+    actualCount <- getImportedObjectCount
+    when (actualCount > targetCount && maxRepeat > 0) $
         performGCAndWait targetCount time (maxRepeat - 1)
-    
+
 assertLeaks leaks action = do
-    (objects, immortal) <- getHOCImportStats
-    let targetCount = objects - immortal + leaks
+    initialCount <- getImportedObjectCount
+    let targetCount = initialCount + leaks
     result <- action `finally` performGCAndWait targetCount 10000 25
     
-    (objects', immortal') <- getHOCImportStats
-    assertEqual "Live objects after allocation,"
-                targetCount (objects' - immortal')
+    finalCount <- getImportedObjectCount
+    assertEqual "Leaks" (finalCount - initialCount) leaks
     return result
 
 assertNoLeaks action = assertLeaks 0 action

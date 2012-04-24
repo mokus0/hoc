@@ -1,8 +1,7 @@
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE TypeFamilies #-}
 module HOC.ID
     ( ID, nil, castObject, idData
-    , getHOCImportStats
+    , getImportedObjectCount
     , importClass
     ) where
 
@@ -36,17 +35,17 @@ dPutStrLn = if {--} False --} True
 
 dPutWords = dPutStrLn . unwords
 
-{-# NOINLINE hocImportStats #-}
-hocImportStats :: MVar (Int, Int) {- allocated, immortal -}
-hocImportStats = unsafePerformIO (newMVar (0,0))
+{-# NOINLINE hocImportedObjectCount #-}
+hocImportedObjectCount :: MVar Int
+hocImportedObjectCount = unsafePerformIO (newMVar 0)
 
-alterHOCImportStats :: (Int -> Int -> (Int, Int)) -> IO ()
-alterHOCImportStats f = 
-    modifyMVar_ hocImportStats (evalPair . uncurry f)
-        where evalPair (!a, !b) = return (a, b)
+alterImportedObjectCount :: (Int -> Int) -> IO ()
+alterImportedObjectCount f = 
+    modifyMVar_ hocImportedObjectCount (eval . f)
+        where eval x = seq x (return x)
 
-getHOCImportStats :: IO (Int, Int)
-getHOCImportStats = readMVar hocImportStats
+getImportedObjectCount :: IO Int
+getImportedObjectCount = readMVar hocImportedObjectCount
 
 instance ObjCArgument (ID a) where
     type ForeignArg (ID a) = Ptr ObjCObject
@@ -56,26 +55,17 @@ instance ObjCArgument (ID a) where
     exportArgument         (ID hso) = withHSO hso (retainObject >=> autoreleaseObject)
     exportArgumentRetained (ID hso) = withHSO hso  retainObject
     
-    importArgument = importArgument' False
+    importArgument p
+        | p == nullPtr = return nil
+        | otherwise = do
+            (hso, isNew) <- importObject p
+            dPutWords ["imported", if isNew then "new" else "old", "object:"
+                      , show hso, "(" ++ show (length (hsoData hso)), "dynamics)"]
+            when isNew $ do
+                alterImportedObjectCount succ
+                addHSOFinalizer hso (alterImportedObjectCount pred)
+            
+            return (ID hso)
 
--- since we're using ForeignPtrs, do we even really care about "immortal"?
 importClass :: Ptr ObjCClass -> IO (ID a)
-importClass = importArgument' True . castPtr
-
-importArgument' immortal p
-    | p == nullPtr = return nil
-    | otherwise = do
-        (hso, isNew) <- importObject p
-        dPutWords ["imported", if isNew then "new" else "old"
-                  , if immortal then "class:" else "object:", show hso
-                  , "(" ++ show (length (hsoData hso)), "dynamics)"]
-        when isNew $ do
-            alterHOCImportStats $ \nAlloc nImm ->
-                (nAlloc + 1, if immortal then nImm + 1 else nImm)
-            if immortal
-                then retainObject p >> return ()
-                else addHSOFinalizer hso $ do
-                    alterHOCImportStats $ \nAlloc nImm -> (nAlloc - 1, nImm)
-        
-        stats <- getHOCImportStats
-        return (ID hso)
+importClass = fmap ID . importObject_ . castPtr

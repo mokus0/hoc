@@ -60,7 +60,7 @@ module HOC (
         declareCStruct,
         declareCStructWithTag,
         
-        getHOCImportStats
+        getImportedObjectCount
     ) where
 
 import HOC.CBits
