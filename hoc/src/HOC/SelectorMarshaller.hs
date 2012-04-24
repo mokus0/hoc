@@ -9,7 +9,7 @@ module HOC.SelectorMarshaller(
     ) where
 
 import Foreign                      ( withArray )
-import Foreign.LibFFI.Experimental  ( CIF, withOutArg )
+import Foreign.LibFFI.Experimental  ( CIF, cif, withOutArg )
 import Foreign.ObjC                 ( ObjCObject, SEL, getSEL )
 import Foreign.Ptr                  ( Ptr, castPtr )
 import GHC.Base                     ( unpackCString# )
@@ -27,11 +27,11 @@ data SelectorInfo a = SelectorInfo {
     }
 
 {-# NOINLINE mkSelectorInfo #-}
-mkSelectorInfo objCName hsName cif
+mkSelectorInfo objCName hsName
     = SelectorInfo objCName hsName cif (getSEL objCName) False
 
 {-# NOINLINE mkSelectorInfo# #-}
-mkSelectorInfo# objCName# hsName# cif
+mkSelectorInfo# objCName# hsName#
     -- NOTE: Don't call mkSelectorInfo here, the rule would apply!
     = SelectorInfo objCName hsName cif (getSEL objCName) False
     where
@@ -39,17 +39,17 @@ mkSelectorInfo# objCName# hsName# cif
         hsName   = unpackCString# hsName#
 
 {-# RULES
-"litstr" forall s1 s2 cif.
-    mkSelectorInfo (unpackCString# s1) (unpackCString# s2) cif
-    = mkSelectorInfo# s1 s2 cif
+"litstr" forall s1 s2.
+    mkSelectorInfo (unpackCString# s1) (unpackCString# s2)
+    = mkSelectorInfo# s1 s2
   #-}
 
 {-# NOINLINE mkSelectorInfoRetained #-}
-mkSelectorInfoRetained objCName hsName cif
+mkSelectorInfoRetained objCName hsName
     = SelectorInfo objCName hsName cif (getSEL objCName) True
 
 {-# NOINLINE mkSelectorInfoRetained# #-}
-mkSelectorInfoRetained# objCName# hsName# cif
+mkSelectorInfoRetained# objCName# hsName#
     -- NOTE: Don't call mkSelectorInfo here, the rule would apply!
     = SelectorInfo objCName hsName cif (getSEL objCName) True
     where
@@ -57,9 +57,9 @@ mkSelectorInfoRetained# objCName# hsName# cif
         hsName   = unpackCString# hsName#
 
 {-# RULES
-"litstr" forall s1 s2 cif.
-    mkSelectorInfoRetained (unpackCString# s1) (unpackCString# s2) cif
-    = mkSelectorInfoRetained# s1 s2 cif
+"litstr" forall s1 s2.
+    mkSelectorInfoRetained (unpackCString# s1) (unpackCString# s2)
+    = mkSelectorInfoRetained# s1 s2
   #-}
 
 

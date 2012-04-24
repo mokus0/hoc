@@ -3,7 +3,7 @@ module HOC.DeclareSelector where
     
 import Control.Monad            ( MonadPlus(mplus) )
 import Data.Maybe               ( fromMaybe )
-import HOC.CannedCIFs           ( makeCannedCIFs, staticCifForSelectorType )
+import HOC.Arguments            ( ForeignSig, DropSelTarget )
 import HOC.ID                   ( ID )
 import HOC.MessageTarget        ( MessageTarget )
 import HOC.NewlyAllocated       ( NewlyAllocated )
@@ -33,32 +33,6 @@ marshallersUpTo = 4
 {-# NOINLINE method3_ #-}
 {-# NOINLINE method4 #-}
 {-# NOINLINE method4_ #-}
-
--- This creates a bunch of common CIFs, and a list describing what has been 
--- created.  Prior to instantiating a new CIF, this list is checked to see if 
--- one has been provided by this library and use that instead.  This saves 
--- memory.
-$(makeCannedCIFs [
-        [t| ID () -> IO () |],
-        [t| ID () -> IO (ID ()) |],
-        [t| ID () -> IO Bool |],
-        [t| ID () -> IO Float |],
-        [t| ID () -> IO Double |],
-        [t| ID () -> ID () -> IO () |],
-        [t| ID () -> ID () -> IO (ID ()) |],
-        [t| Bool -> ID () -> IO () |],
-        [t| Float -> ID () -> IO () |],
-        [t| Double -> ID () -> IO () |],
-        [t| ID () -> ID () -> IO Bool |],
-        [t| ID () -> ID () -> IO Float |],
-        [t| ID () -> ID () -> IO Double |],
-        [t| ID () -> ID () -> ID () -> IO () |],
-        [t| ID () -> ID () -> ID () -> IO (ID ()) |],
-        [t| ID () -> ID () -> ID () -> IO Bool |],
-        [t| ID () -> ID () -> ID () -> ID () -> IO () |],
-        [t| ID () -> ID () -> ID () -> ID () -> IO (ID ()) |],
-        [t| ID () -> ID () -> ID () -> ID () -> IO Bool |]
-    ])
 
 declareRenamedSelector name haskellName typeSigQ =
     do
@@ -235,8 +209,10 @@ declareRenamedSelector name haskellName typeSigQ =
                 -- valD (VarP selectorName) (normalB [| selectorInfoSel $(infoVar) |]) [],
                 
                 
-                -- $(infoName) :: SelectorInfo
-                -- sigD (mkName infoName) [t| SelectorInfo |],
+                -- $(infoName) :: SelectorInfo (ForeignSig (DropSelTarget $(...)))
+                sigD (mkName $ infoName)
+                    [t| SelectorInfo (ForeignSig (DropSelTarget 
+                        $(return $ simplifyType doctoredTypeSig))) |],
                 
                 -- $(infoName) = ...
                 valD (varP $ mkName $ infoName) (normalB
@@ -246,10 +222,6 @@ declareRenamedSelector name haskellName typeSigQ =
                                                 $(if haskellName == name
                                                         then [|n|]
                                                         else stringE haskellName)
-                                                $(staticCifForSelectorType
-                                                        'marshallersUpTo
-                                                        cannedCIFTypeNames
-                                                        (return $ simplifyType doctoredTypeSig))
                         |]) [],
                     
                 -- type $(imptypeName) target inst = arg1 -> arg2 -> target -> IO result

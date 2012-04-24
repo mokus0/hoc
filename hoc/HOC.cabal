@@ -27,7 +27,6 @@ Library
   
   other-modules:        HOC.Arguments
                         HOC.CEnum
-                        HOC.CannedCIFs
                         HOC.Class
                         HOC.DeclareClass
                         HOC.DeclareSelector
