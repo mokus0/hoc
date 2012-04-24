@@ -4,7 +4,7 @@ module HOC.DeclareSelector where
 import Control.Monad            ( MonadPlus(mplus) )
 import Data.Maybe               ( fromMaybe )
 import HOC.CannedCIFs           ( makeCannedCIFs, staticCifForSelectorType )
-import HOC.CBits                ( ID )
+import HOC.ID                   ( ID )
 import HOC.MessageTarget        ( MessageTarget )
 import HOC.NewlyAllocated       ( NewlyAllocated )
 import HOC.SelectorMarshaller

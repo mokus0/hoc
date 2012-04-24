@@ -1,8 +1,15 @@
-{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies,
-             TypeSynonymInstances, FlexibleContexts,
-             FlexibleInstances #-}
+{-# LANGUAGE EmptyDataDecls #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 module HOC.Class
-    ( ClassAndObject
+    ( Class_
+    , Class
+    , MetaClass
+    
+    , ClassAndObject
     , ClassObject(..)
     , unsafeGetClassObject
     , RawStaticClass(..)
@@ -11,10 +18,13 @@ module HOC.Class
 
 import Foreign.ObjC         ( ObjCClass, objc_getClass, object_getClass )
 import Foreign.Ptr          ( Ptr, castPtr )
-import HOC.CBits            ( Class, ID )
-import HOC.ID               ( importClass )
+import HOC.ID               ( ID, importClass )
 import HOC.MessageTarget    ( Object )
 import System.IO.Unsafe     ( unsafePerformIO )
+
+data Class_ a
+type Class a = ID (Class_ a)
+type MetaClass a = Class (Class_ a)
 
 class (Object a, Object b) => ClassAndObject a b | a -> b, b -> a
 

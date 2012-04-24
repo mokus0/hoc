@@ -13,7 +13,7 @@ import Foreign.C
 import Foreign.LibFFI.Experimental  ( CIF , cif )
 import Foreign.ObjC                 ( SEL )
 import HOC.Arguments                ( ForeignSel )
-import HOC.CBits                    ( ID )
+import HOC.ID                       ( ID )
 import HOC.TH                       ( fromSameModuleAs_v )
 import Language.Haskell.TH
 

@@ -1,18 +1,34 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE TypeFamilies #-}
 module HOC.ID
-    ( getHOCImportStats
+    ( ID, nil, castObject, idData
+    , getHOCImportStats
     , importClass
     ) where
 
 import Control.Concurrent.MVar  ( MVar, newMVar, modifyMVar_, readMVar )
-import Control.Monad            ( when )
+import Control.Monad            ( (>=>), when )
+import Data.Dynamic             ( Dynamic )
 import Foreign.ObjC             ( ObjCClass, ObjCObject, retainObject, autoreleaseObject )
-import Foreign.ObjC.HSObject    ( withHSO, hsoData, addHSOFinalizer, importObject )
+import Foreign.ObjC.HSObject
 import Foreign.Ptr              ( Ptr, castPtr,  nullPtr )
 import HOC.Arguments            ( ObjCArgument(..) )
-import HOC.CBits
 import System.IO.Unsafe         ( unsafePerformIO )
+
+newtype ID a = ID HSO
+    deriving (Eq)
+
+instance Show (ID a) where
+    showsPrec p (ID hso) = showsPrec p hso
+
+nil :: ID a
+nil = ID nilHSO
+
+castObject :: ID a -> ID b
+castObject (ID a) = ID a
+
+idData :: ID a -> [Dynamic]
+idData (ID hso) = hsoData hso
 
 dPutStrLn = if {--} False --} True
     then putStrLn
@@ -35,19 +51,10 @@ getHOCImportStats = readMVar hocImportStats
 instance ObjCArgument (ID a) where
     type ForeignArg (ID a) = Ptr ObjCObject
     
-    withExportedArgument (ID hso) action = withHSO hso action
-    withExportedArgument  Nil     action = action nullPtr
+    withExportedArgument (ID hso) = withHSO hso
     
-    -- TODO: think more about whether this function can be eliminated...
-    exportArgument (ID hso) = withHSO hso $ \arg -> do
-        retainObject arg
-        autoreleaseObject arg
-    exportArgument Nil = return nullPtr
-   
-    -- this time with no autorelease.  This method effectively claims
-    -- ownership of the object.
-    exportArgumentRetained (ID hso) = withHSO hso retainObject
-    exportArgumentRetained  Nil     = return nullPtr
+    exportArgument         (ID hso) = withHSO hso (retainObject >=> autoreleaseObject)
+    exportArgumentRetained (ID hso) = withHSO hso  retainObject
     
     importArgument = importArgument' False
 
@@ -56,7 +63,7 @@ importClass :: Ptr ObjCClass -> IO (ID a)
 importClass = importArgument' True . castPtr
 
 importArgument' immortal p
-    | p == nullPtr = return Nil
+    | p == nullPtr = return nil
     | otherwise = do
         (hso, isNew) <- importObject p
         dPutWords ["imported", if isNew then "new" else "old"

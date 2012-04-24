@@ -10,8 +10,8 @@ import Foreign.ObjC             ( ObjCClass, ObjCObject )
 import Foreign.Ptr              ( Ptr, nullPtr )
 import Foreign.Storable         ( pokeByteOff, sizeOf )
 import HOC.Arguments            ( ObjCArgument(..) )
-import HOC.CBits                ( ID, castObject )
 import HOC.Class                ( RawStaticClass, rawStaticClassForObject )
+import HOC.ID                   ( ID, castObject )
 import HOC.MessageTarget        ( Object, MessageTarget(..) )
 import HOC.MsgSend
 

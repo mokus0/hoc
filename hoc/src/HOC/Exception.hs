@@ -8,7 +8,7 @@ import Foreign.StablePtr
 import Foreign.C.String     ( withCString )
 import HOC.Arguments        ( importArgument, exportArgument )
 import HOC.CBits
-import HOC.ID               ( {- instances -} )
+import HOC.ID               ( ID )
 
 newtype WrappedNSException = WrappedNSException (ID ())
     deriving Typeable

@@ -7,7 +7,7 @@ import Foreign.LibFFI.Experimental  ( CIF, RetType )
 import Foreign.ObjC                 ( ObjCObject, SEL, releaseObject )
 import Foreign.Ptr                  ( Ptr, nullPtr )
 import HOC.Arguments                ( ObjCArgument(..) )
-import HOC.CBits                    ( ID(..), nil )
+import HOC.ID                       ( ID(..), nil, castObject )
 import HOC.MsgSend                  ( objSendMessageWithRetval, objSendMessageWithoutRetval )
 
 class (ObjCArgument a, ForeignArg a ~ Ptr ObjCObject) => MessageTarget a where
@@ -35,11 +35,8 @@ instance MessageTarget (ID a) where
     sendMessageWithoutRetval _ = objSendMessageWithoutRetval
 
 instance Object (ID a) where
-    toID (ID a) = ID a
-    toID Nil = Nil
-    
-    fromID (ID a) = ID a
-    fromID Nil = Nil
+    toID   = castObject
+    fromID = castObject
 
 -- called when importing 'Inited' objects to offset the extra
 -- retain such objects have.
