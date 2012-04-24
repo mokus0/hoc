@@ -3,17 +3,15 @@
 module HOC.ID
     ( getHOCImportStats
     , importClass
-    , getHaskellDataForID
     ) where
 
-import Control.Concurrent.MVar  ( MVar, newMVar, modifyMVar_, readMVar, withMVar )
+import Control.Concurrent.MVar  ( MVar, newMVar, modifyMVar_, readMVar )
 import Control.Monad            ( when )
 import Foreign.ObjC             ( ObjCClass, ObjCObject, retainObject, autoreleaseObject )
 import Foreign.ObjC.HSObject    ( withHSO, hsoData, addHSOFinalizer, importObject )
 import Foreign.Ptr              ( Ptr, castPtr,  nullPtr )
 import HOC.Arguments            ( ObjCArgument(..) )
 import HOC.CBits
-import System.IO                ( hFlush, stdout )
 import System.IO.Unsafe         ( unsafePerformIO )
 
 dPutStrLn = if {--} False --} True
@@ -38,7 +36,7 @@ instance ObjCArgument (ID a) where
     type ForeignArg (ID a) = Ptr ObjCObject
     
     withExportedArgument (ID hso) action = withHSO hso action
-    withExportedArgument Nil action = action nullPtr
+    withExportedArgument  Nil     action = action nullPtr
     
     -- TODO: think more about whether this function can be eliminated...
     exportArgument (ID hso) = withHSO hso $ \arg -> do
@@ -48,9 +46,8 @@ instance ObjCArgument (ID a) where
    
     -- this time with no autorelease.  This method effectively claims
     -- ownership of the object.
-    exportArgumentRetained (ID hso) =
-        withHSO hso retainObject
-    exportArgumentRetained Nil = return nullPtr
+    exportArgumentRetained (ID hso) = withHSO hso retainObject
+    exportArgumentRetained  Nil     = return nullPtr
     
     importArgument = importArgument' False
 
@@ -75,6 +72,3 @@ importArgument' immortal p
         
         stats <- getHOCImportStats
         return (ID hso)
-
-getHaskellDataForID (ID hso)    = hsoData hso
-getHaskellDataForID _           = []

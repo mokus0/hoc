@@ -11,9 +11,8 @@ import Foreign.ObjC
 import Foreign.ObjC.HSObject
 import Foreign.Ptr                  ( castPtr )
 import HOC.Arguments                ( objcOutRet, ForeignSel )
-import HOC.CBits                    ( ID, nil, recordHOCEvent, wrapHsIMP, newIMP )
+import HOC.CBits                    ( ID(..), nil, recordHOCEvent, wrapHsIMP, newIMP )
 import HOC.Exception                ( exceptionHaskellToObjC )
-import HOC.ID                       ( getHaskellDataForID  )
 import HOC.Invocation
 import HOC.MessageTarget            ( Object(..) )
 import HOC.SelectorMarshaller       ( SelectorInfo(..) )
@@ -38,7 +37,9 @@ getIVar :: InstanceVariables cls iv => IVar iv a -> cls -> IO a
 getInstanceMVar :: InstanceVariables cls iv => IVar iv a -> cls -> MVar a
 
 getInstanceVariablesForObject :: InstanceVariables cls iv => cls -> iv
-getInstanceVariablesForObject obj = head $ mapMaybe fromDynamic $ getHaskellDataForID  $ toID obj
+getInstanceVariablesForObject obj = case toID obj of
+    Nil     -> error "getInstanceVariablesForObject: object is nil"
+    ID hso  -> head $ mapMaybe fromDynamic $ hsoData hso
 
 getInstanceMVar (IVar extract) obj = extract $ getInstanceVariablesForObject obj
 
