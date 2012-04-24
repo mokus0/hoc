@@ -3,7 +3,7 @@
 module MiniFoundation where
 
 import HOC
-import HOC.Exception        ( WrappedNSException(..) )
+import Foreign.ObjC (ObjCException(..))
 
 import Foreign.C.Types
 import Control.Exception
@@ -115,7 +115,7 @@ $(declareExternConst "NSParseErrorException" [t| NSString () |])
 catchNS :: IO a -> (NSException () -> IO a) -> IO a
 
 catchNS action handler
-    = action `catch` \(WrappedNSException exc) -> handler (castObject exc)
+    = action `catch` \(ObjCException exc) -> importArgument exc >>= handler
 
 -- NSMutableArray
 

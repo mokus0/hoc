@@ -55,8 +55,6 @@ module HOC (
         FFIType(..),
         struct,
         
-        WrappedNSException(..),
-        
         declareCStruct,
         declareCStructWithTag,
         
@@ -78,7 +76,6 @@ import HOC.CEnum
 import HOC.ExternConstants
 import HOC.ExternFunctions
 import HOC.Selectors
-import HOC.Exception
 import HOC.CStruct
 import Foreign.ObjC ( SEL, getSEL )
 import Foreign.LibFFI.Experimental

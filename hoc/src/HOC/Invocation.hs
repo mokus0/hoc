@@ -1,25 +1,19 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeFamilies #-}
 module HOC.Invocation where
 
-import Control.Monad                ( when )
-import Foreign.Ptr                  ( Ptr, castPtr, nullPtr, FunPtr )
-import Foreign.Storable             ( peekElemOff )
 import Foreign.C                    ( CInt )
 import Foreign.LibFFI.Experimental  ( CIF, RetType, withInRet, ArgType, peekArg )
+import Foreign.ObjC                 ( objc_ffi_call )
+import Foreign.Ptr                  ( Ptr, castPtr, nullPtr, FunPtr )
+import Foreign.Storable             ( peekElemOff )
 import HOC.Arguments                ( ObjCArgument, ForeignArg, objcInRet, objcInArg )
-import HOC.CBits                    ( c_callWithExceptions )
-import HOC.Exception                ( exceptionObjCToHaskell )
-
-callWithException cif fun ret args = do
-    exception <- c_callWithExceptions cif fun ret args
-    when (exception /= nullPtr) $
-        exceptionObjCToHaskell exception
 
 callWithoutRetval :: CIF a -> FunPtr a
                   -> Ptr (Ptr ())
                   -> IO ()
 
-callWithoutRetval cif fun args = callWithException cif fun nullPtr args
+callWithoutRetval cif fun args = objc_ffi_call cif fun nullPtr args
 
 
 callWithRetval :: (ObjCArgument ret, RetType (ForeignArg ret))
@@ -28,7 +22,7 @@ callWithRetval :: (ObjCArgument ret, RetType (ForeignArg ret))
                -> IO ret
 
 callWithRetval cif fun args =
-    withInRet objcInRet (\retptr -> callWithException cif fun retptr args)
+    withInRet objcInRet (\retptr -> objc_ffi_call cif fun (castPtr retptr) args)
 
 getMarshalledArgument :: (ObjCArgument a, ArgType (ForeignArg a)) => Ptr (Ptr ()) -> Int -> IO a
 getMarshalledArgument args idx = do

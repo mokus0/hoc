@@ -12,7 +12,6 @@ import Foreign.ObjC.HSObject
 import Foreign.Ptr                  ( castPtr )
 import HOC.Arguments                ( objcOutRet, ForeignSel )
 import HOC.CBits                    ( recordHOCEvent, wrapHsIMP, newIMP )
-import HOC.Exception                ( exceptionHaskellToObjC )
 import HOC.ID                       ( ID(..), nil, idData )
 import HOC.Invocation
 import HOC.MessageTarget            ( Object(..) )
@@ -219,7 +218,7 @@ mkClassExportAction name prefix members =
             |]
             where
                 marshal = [| do recordHOCEvent kHOCEnteredHaskell $(varE $ mkName "args")
-                                exc <- exceptionHaskellToObjC $marshal'
+                                exc <- wrapException $marshal'
                                 recordHOCEvent kHOCAboutToLeaveHaskell $(varE $ mkName "args")
                                 return exc
                           |]

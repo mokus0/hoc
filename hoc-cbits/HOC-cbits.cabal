@@ -19,18 +19,14 @@ Library
   ghc-options:          -Wall
   hs-source-dirs:       src
   exposed-modules:      HOC.CBits
-                        HOC.CBits.Exceptions
                         HOC.CBits.FFICallInterface
-                        HOC.CBits.Invocation
                         HOC.CBits.Marshalling
                         HOC.CBits.MemoryManagement
                         HOC.CBits.MsgSend
                         HOC.CBits.Statistics
                         HOC.CBits.Types
     
-  c-sources:            cbits/Exceptions.m
-                        cbits/FFICallInterface.m
-                        cbits/Invocation.m
+  c-sources:            cbits/FFICallInterface.m
                         cbits/Marshalling.m
                         cbits/MemoryManagement.m
                         cbits/Methods.m

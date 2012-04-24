@@ -22,7 +22,6 @@ Library
   
   exposed-modules:      HOC
                         HOC.NameCaseChange
-                        HOC.Exception
                         HOC.SelectorNameMangling
   
   other-modules:        HOC.Arguments
