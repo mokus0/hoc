@@ -22,8 +22,6 @@ dPutStrLn = if {--} False --} True
 
 dPutWords = dPutStrLn . unwords
 
--- TODO: track these better... 
---  in particular, track live objects rather than just imports and finalizers.
 {-# NOINLINE hocImportStats #-}
 hocImportStats :: MVar (Int, Int) {- allocated, immortal -}
 hocImportStats = unsafePerformIO (newMVar (0,0))
