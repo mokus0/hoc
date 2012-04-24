@@ -3,29 +3,20 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module HOC.CBits.Types where
 
-import Foreign.ForeignPtr
 import Foreign.Ptr
 import Foreign.LibFFI.Experimental  hiding (Dynamic)
 import Foreign.ObjC                 hiding (ObjCException, Class)
 import Foreign.ObjC.HSObject
-import System.IO.Unsafe
 
-data ID a = ID {-# UNPACK #-} !HSO | Nil
-
-instance Eq (ID a) where
-    (ID (HSO a _)) == (ID (HSO b _))    = a == b
-    Nil == Nil                          = True
-    _ == _                              = False
+-- As much as I'd like to make the HSO an unpacked strict field,
+-- that breaks memory management because weak pointers to the HSO
+-- get finalized as soon as the HSO gets put into an ID.
+data ID a = ID HSO | Nil
+    deriving (Eq)
 
 instance Show (ID a) where
-    showsPrec _ Nil = showString "nil"
-    showsPrec _ (ID (HSO fp _))
-        = showChar '<'
-        . showString cls
-        . showChar ' '
-        . shows fp
-        . showChar '>'
-        where cls = unsafePerformIO (withForeignPtr fp object_getClassName)
+    showsPrec _  Nil     = showString "nil"
+    showsPrec p (ID hso) = showsPrec p hso
 
 nil :: ID a
 nil = Nil

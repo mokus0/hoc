@@ -99,11 +99,17 @@ $(exportClass "ExceptionThrower" "et_" [
     ])
 
 et_throwHaskellException self = fail "Test Exception"
-et_throwNSException self = _NSException # exceptionWithNameReasonUserInfo
-                                        (toNSString "FooBar")
-                                        (toNSString "baz")
-                                        nil
-                            >>= raise
+et_throwNSException self = do
+    -- Use nsString rather than toNSString; the latter will be
+    -- let-floated to the top, screwing up our leak stats system
+    fooBar <- nsString "FooBar"
+    baz    <- nsString "baz"
+    
+    _NSException # exceptionWithNameReasonUserInfo
+                 fooBar
+                 baz
+                 nil
+     >>= raise
 
 $(declareSelector "countInvocations:upto:" [t| Int -> Int -> IO Int |])
 
@@ -193,8 +199,8 @@ tests = [
             ),
             testCase "initWithContentsOfFile" (assertNoLeaks $ do
                 expected <- readFile testTextFile
-                actual_ns <- _NSString # alloc >>= initWithContentsOfFile
-                                                    (toNSString testTextFile)
+                fileName <- nsString testTextFile
+                actual_ns <- _NSString # alloc >>= initWithContentsOfFile fileName
                 fromNSString actual_ns @?= expected
             ),
             testGroup "Unicode" $
@@ -236,10 +242,10 @@ tests = [
                 
                 -- this catches a class of bug which helped me grok HSOs ;-)
                 
-                (num, array) <- assertLeaks 3 $ do
+                (num, array) <- assertLeaks 4 $ do
                     num <- _NSNumber # alloc >>= initWithInt 42         -- 1 import
                     hobj <- _HaskellObjectWithOutlet # alloc >>= init   -- 1 import
-                    hobj # setOtherObject num   -- 2 imports (self and arg in method body)
+                    hobj # setOtherObject num   -- 1 import (arg in method body)
                     
                     array <- _NSMutableArray # alloc >>= init           -- 1 import
                     array # addObject hobj                              -- 0 imports
@@ -249,15 +255,17 @@ tests = [
                     -- by hobj, both 'hobj' refs are the same HSO, and 'array' is
                     -- held by return.
                 
-                assertLeaks (-3) $ do
+                num' <- assertLeaks (-2) $ do
                     hobj <- array # objectAtIndex 0 :: IO (HaskellObjectWithOutlet ())
-                        -- 1 import
+                        -- 0 imports
                     
-                    num' <- hobj # otherObject >>= return . castObject
-                        -- 2 imports (hobj as 'self', num' as return val)
-                    
-                    assertEqual "Different Object returned." num num'
-                    -- array should now be released, triggering release of hobj and num.
+                    hobj # otherObject >>= return . castObject :: IO (NSNumber ())
+                        -- 1 import (num' as return val)
+                    -- array and hobj should now be released
+                
+                assertLeaks (-2) $ do
+                    assertEqual "Different Objects returned." num num'
+                    -- num and num' should now be released
             ),
             testCase "set-get-maybeString" (assertNoLeaks $ do
                 hobj <- _HaskellObjectWithOutlet # alloc >>= init
@@ -312,10 +320,10 @@ tests = [
             )
         ],
         testGroup "nil" [
-            testCase "eq" (do
+            testCase "eq" (assertNoLeaks $ do
                 when (nil /= nil) $ assert "nil not equal"
             ),
-            testCase "message" (do
+            testCase "message" (assertNoLeaks $ do
                 let nilNumber = nil :: NSNumber ()
                 result <- try (nilNumber # intValue)
                 expected <- try (fail "Message sent to nil: intValue")
@@ -364,64 +372,68 @@ tests = [
             ]
         ],
         testGroup "structs" [
-            testCase "pointArg" (do
+            testCase "pointArg" (assertNoLeaks $ do
                 let point = NSPoint 6.42 7.42
                 result <- _NSValue # valueWithPoint point
                 return ()
             ),
-            testCase "point" (do
+            testCase "point" (assertNoLeaks $ do
                 let point = NSPoint 6.42 7.42
                 result <- _NSValue # valueWithPoint point >>= pointValue
                 result @?= point
             ),
-            testCase "size" (do
+            testCase "size" (assertNoLeaks $ do
                 let size = NSSize 6.42 7.42
                 result <- _NSValue # valueWithSize size >>= sizeValue
                 result @?= size
             ),
-            testCase "rect" (do    
+            testCase "rect" (assertNoLeaks $ do
                 let rect = NSRect (NSPoint 1 2) (NSSize 3 4)
                 result <- _NSValue # valueWithRect rect >>= rectValue
                 result @?= rect
             ),
-            testCase "range" (do
+            testCase "range" (assertNoLeaks $ do
                 let range = NSRange 25 3
                 homebrew <- nsString "Imperial India Pale Ale (IPA)"
                 ipa      <- nsString "IPA"
                 result <- homebrew # rangeOfString ipa
                 result @?= range
             ),
-            testCase "HaskellObjectStructRet" (do
+            testCase "HaskellObjectStructRet" (assertNoLeaks $ do
                 hobj <- _HaskellObjectWithDescription # alloc >>= init
                 rect     <- hobj # rectValue
                 expected <- hobj # ho2_rectValue
                 rect @?= expected
             )
         ],
-        testCase "externConstant" (
+        testCase "externConstant" (assertNoLeaks $ 
             fromNSString nsParseErrorException @?= "NSParseErrorException"
         ),
-        testCase "externFunction" (do
+        testCase "externFunction" (assertNoLeaks $ do
             result <- nsStringFromSize (NSSize 42 23)
             fromNSString result @?= if System.Info.os == "darwin" then "{42, 23}" else "{width = 42; height = 23}"
         ),
         testGroup "exceptions" [
-            testCase "CtoH" (do
+            testCase "CtoH" (assertNoLeaks $ do
+                -- Use nsString rather than toNSString; the latter will be
+                -- let-floated to the top, screwing up our leak stats system
+                fooBar <- nsString "FooBar"
+                baz    <- nsString "baz"
                 exc1 <- _NSException # exceptionWithNameReasonUserInfo
-                                        (toNSString "FooBar")
-                                        (toNSString "baz")
+                                        fooBar
+                                        baz
                                         nil
                 result <- (exc1 # raise >> return "No Exception")
                         `catchNS` \e -> e # name >>= return . fromNSString 
                 result @?= "FooBar"
             ),
-            testCase "HtoCtoH" (do
+            testCase "HtoCtoH" (assertNoLeaks $ do
                 obj <- _ExceptionThrower # alloc >>= init
                 result <- try (obj # throwHaskellException)
                 show (result :: Either SomeException ()) 
                     @?= "Left user error (Test Exception)"
             ),
-            testCase "CtoHtoCtoH" (do
+            testCase "CtoHtoCtoH" (assertNoLeaks $ do
                 obj <- _ExceptionThrower # alloc >>= init
                 result <- (obj # throwNSException >> return "No Exception")
                         `catchNS` \e -> e # name >>= return . fromNSString 

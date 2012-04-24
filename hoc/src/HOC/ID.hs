@@ -6,15 +6,15 @@ module HOC.ID
     , getHaskellDataForID
     ) where
 
-import Control.Concurrent.MVar  ( MVar, newMVar, modifyMVar_, readMVar )
-import Foreign.ForeignPtr       ( withForeignPtr )
+import Control.Concurrent.MVar  ( MVar, newMVar, modifyMVar_, readMVar, withMVar )
+import Control.Monad            ( when )
 import Foreign.ObjC             ( ObjCClass, ObjCObject, retainObject, autoreleaseObject )
-import Foreign.ObjC.HSObject    ( HSO(..), importObject )
+import Foreign.ObjC.HSObject    ( withHSO, hsoData, addHSOFinalizer, importObject )
 import Foreign.Ptr              ( Ptr, castPtr,  nullPtr )
 import HOC.Arguments            ( ObjCArgument(..) )
 import HOC.CBits
+import System.IO                ( hFlush, stdout )
 import System.IO.Unsafe         ( unsafePerformIO )
-import System.Mem.Weak          ( addFinalizer )
 
 dPutStrLn = if {--} False --} True
     then putStrLn
@@ -36,25 +36,22 @@ alterHOCImportStats f =
 getHOCImportStats :: IO (Int, Int)
 getHOCImportStats = readMVar hocImportStats
 
-
 instance ObjCArgument (ID a) where
     type ForeignArg (ID a) = Ptr ObjCObject
     
-    withExportedArgument (ID (HSO fp _)) action =
-        withForeignPtr fp action
-    withExportedArgument Nil action = action (nullPtr)
+    withExportedArgument (ID hso) action = withHSO hso action
+    withExportedArgument Nil action = action nullPtr
     
     -- TODO: think more about whether this function can be eliminated...
-    exportArgument (ID (HSO fp _)) =
-        withForeignPtr fp $ \arg -> do
-            retainObject arg
-            autoreleaseObject arg
+    exportArgument (ID hso) = withHSO hso $ \arg -> do
+        retainObject arg
+        autoreleaseObject arg
     exportArgument Nil = return nullPtr
    
     -- this time with no autorelease.  This method effectively claims
     -- ownership of the object.
-    exportArgumentRetained (ID (HSO fp _)) =
-        withForeignPtr fp retainObject
+    exportArgumentRetained (ID hso) =
+        withHSO hso retainObject
     exportArgumentRetained Nil = return nullPtr
     
     importArgument = importArgument' False
@@ -66,21 +63,20 @@ importClass = importArgument' True . castPtr
 importArgument' immortal p
     | p == nullPtr = return Nil
     | otherwise = do
-        dPutWords ["importing", show p, if immortal then "(immortal)" else ""]
-        hso@(HSO fp ds) <- importObject p
-        dPutWords ["imported:", show fp, "(" ++ show (length ds), "dynamics)"]
-        alterHOCImportStats $ \nAlloc nImm ->
-            (nAlloc + 1, if immortal then nImm + 1 else nImm)
-        if immortal
-            then retainObject p >> return ()
-            else addFinalizer hso $ do
-                alterHOCImportStats $ \nAlloc nImm -> (nAlloc - 1, nImm)
-                stats <- getHOCImportStats
-                dPutWords ["finalized object", show p, "stats now", show stats]
+        (hso, isNew) <- importObject p
+        dPutWords ["imported", if isNew then "new" else "old"
+                  , if immortal then "class:" else "object:", show hso
+                  , "(" ++ show (length (hsoData hso)), "dynamics)"]
+        when isNew $ do
+            alterHOCImportStats $ \nAlloc nImm ->
+                (nAlloc + 1, if immortal then nImm + 1 else nImm)
+            if immortal
+                then retainObject p >> return ()
+                else addHSOFinalizer hso $ do
+                    alterHOCImportStats $ \nAlloc nImm -> (nAlloc - 1, nImm)
         
         stats <- getHOCImportStats
-        dPutStrLn ("did stats stuff... stats now " ++ show stats)
         return (ID hso)
 
-getHaskellDataForID (ID (HSO _ dat)) = dat
-getHaskellDataForID _                = []
+getHaskellDataForID (ID hso)    = hsoData hso
+getHaskellDataForID _           = []
