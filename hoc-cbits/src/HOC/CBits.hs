@@ -1,8 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module HOC.CBits
-    ( module HOC.CBits
-        
-    , module HOC.CBits.FFICallInterface
+    ( module HOC.CBits.FFICallInterface
     , module HOC.CBits.Marshalling
     , module HOC.CBits.MemoryManagement
     , module HOC.CBits.MsgSend
