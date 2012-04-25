@@ -1,7 +1,4 @@
 module HOC.TH(
-        mkNameG_v,
-        mkNameG_tc,
-        mkNameG_d,
         whereQ,
         fromSameModuleAs_tc,
         fromSameModuleAs_v
