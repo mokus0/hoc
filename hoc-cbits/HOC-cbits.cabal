@@ -31,7 +31,9 @@ Library
                         cbits/MemoryManagement.m
                         cbits/Methods.m
                         cbits/Statistics.m
-    
+  
+  include-dirs:         cbits
+  
   extra-libraries:      objc, ffi
   
   if os(darwin)

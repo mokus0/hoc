@@ -8,12 +8,12 @@ import Data.Maybe                   ( mapMaybe )
 import Data.Typeable                ( Typeable )
 import Foreign.LibFFI.Experimental  ( cif, CIF, pokeRet )
 import Foreign.ObjC
-import Foreign.ObjC.HSObject
+import Foreign.ObjC.HSObject        ( registerHSObjectClass )
 import Foreign.Ptr                  ( castPtr )
 import HOC.Arguments                ( objcOutRet, ForeignSel )
-import HOC.CBits                    ( recordHOCEvent, wrapHsIMP, newIMP )
+import HOC.CBits
 import HOC.ID                       ( ID(..), nil, idData )
-import HOC.Invocation
+import HOC.Invocation               ( getMarshalledArgument )
 import HOC.MessageTarget            ( Object(..) )
 import HOC.SelectorMarshaller       ( SelectorInfo(..) )
 import HOC.TH

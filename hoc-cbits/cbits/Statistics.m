@@ -23,13 +23,14 @@ static double tonano(uint64_t x)
     }
     return (double)x * sTimebaseInfo.numer / sTimebaseInfo.denom;
 }
-#endif
 
-#endif
+#endif // GNUSTEP
 
 static double enteringTime = 0;
 static double importTime = 0;
 const double weight = 0.01;
+
+#endif // DO_TIMINGS
 
 void recordHOCEvent(int what, void ** args)
 {

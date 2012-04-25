@@ -28,11 +28,3 @@ getMarshalledArgument :: (ObjCArgument a, ArgType (ForeignArg a)) => Ptr (Ptr ()
 getMarshalledArgument args idx = do
     p <- peekElemOff args idx
     peekArg objcInArg (castPtr p)
-
-
-kHOCEnteredHaskell      = 1 :: CInt
-kHOCImportedArguments   = 2 :: CInt
-kHOCAboutToExportResult = 3 :: CInt
-kHOCAboutToLeaveHaskell = 4 :: CInt
-
-
