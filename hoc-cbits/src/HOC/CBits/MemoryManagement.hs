@@ -5,8 +5,8 @@ import Control.Exception (bracket)
 import Foreign.ObjC
 import Foreign.Ptr
 
-foreign import ccall "MemoryManagement.h newAutoreleasePool"
+foreign import ccall
     newAutoreleasePool :: IO (Ptr ObjCObject)
 
 withAutoreleasePool :: IO a -> IO a
-withAutoreleasePool action = bracket newAutoreleasePool releaseObject (const action)
+withAutoreleasePool = bracket newAutoreleasePool releaseObject . const
