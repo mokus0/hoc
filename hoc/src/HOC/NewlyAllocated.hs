@@ -13,31 +13,37 @@ module HOC.NewlyAllocated where
     the call to alloc and the call to init.
 -}
 
-import Foreign.ObjC     ( ObjCObject )
-import Foreign.Ptr      ( Ptr, nullPtr )
-import HOC.Arguments    ( ObjCArgument(..) )
+import Foreign.LibFFI.Experimental ( outByRef )
+import Foreign.ObjC     ( ObjCObject, ObjCSuper(..), msgSend, msgSendSuperWith )
+import Foreign.Ptr      ( Ptr, castPtr, nullPtr )
+import HOC.Arguments    ( ObjCArgument(..), objcOutArg )
 import HOC.Class        ( Class, ClassObject(classObject) )
-import HOC.ID           ( ID, castObject )
+import HOC.ID           ( ID, castObject, importClass )
 import HOC.MessageTarget( MessageTarget(..) )
-import HOC.MsgSend
-import HOC.Super        ( Super(super), SuperClass, withExportedSuper )
+import HOC.Super        ( Super(..), SuperClass )
 
-data NewlyAllocated a
-    = NewlyAllocated {-# UNPACK #-} !(Ptr ObjCObject)
-    | NewSuper       {-# UNPACK #-} !(Ptr ObjCObject) !(Class ())
+newtype NewlyAllocated a
+    = NewlyAllocated (Ptr ObjCObject)
+
+data NewSuper a
+    = NewSuper (Ptr ObjCObject) (Class ())
 
 instance ObjCArgument (NewlyAllocated a) where
     type ForeignArg (NewlyAllocated a) = Ptr ObjCObject
     
-    withExportedArgument (NewlyAllocated p) action = action p
-    withExportedArgument (NewSuper p cls) action =
-        withExportedArgument cls $ \cls ->
-        withExportedSuper p cls action
-    
     exportArgument (NewlyAllocated p) = return p
-    exportArgument (NewSuper p cls) = fail "HOC.NewlyAllocated.NewSuper: exportArgument"
+    importArgument = return . NewlyAllocated
+
+instance ObjCArgument (NewSuper a) where
+    type ForeignArg (NewSuper a) = ObjCSuper
     
-    importArgument p = return (NewlyAllocated p)
+    exportArgument (NewSuper obj cls) = do
+        cls' <- exportArgument cls
+        return (ObjCSuper obj (castPtr cls'))
+    
+    importArgument (ObjCSuper obj cls) = do
+        cls' <- importClass (castPtr cls)
+        return (NewSuper obj cls')
 
 -- Note that NewlyAllocated is not an instance of Object. Objects can be converted
 -- to IDs, and IDs are reference counted. Not retaining and releasing objects before
@@ -45,14 +51,13 @@ instance ObjCArgument (NewlyAllocated a) where
 -- safety)..
     
 instance MessageTarget (NewlyAllocated a) where
-    isNil (NewlyAllocated p) = p == nullPtr
-    isNil (NewSuper p cls) = (p == nullPtr) || isNil cls
+    isNil       (NewlyAllocated obj) = obj == nullPtr
+    sendMessage (NewlyAllocated obj) = msgSend obj
 
-    sendMessageWithRetval (NewlyAllocated _) = objSendMessageWithRetval
-    sendMessageWithRetval (NewSuper _ _) = superSendMessageWithRetval
-    sendMessageWithoutRetval (NewlyAllocated _) = objSendMessageWithoutRetval
-    sendMessageWithoutRetval (NewSuper _ _) = superSendMessageWithoutRetval
+instance MessageTarget (NewSuper a) where
+    isNil       (NewSuper obj cls) = (obj == nullPtr) || isNil cls
+    sendMessage = msgSendSuperWith (outByRef objcOutArg)
 
 instance (SuperClass sub (ID super), ClassObject (Class super))
-    => Super (NewlyAllocated sub) (NewlyAllocated (ID super)) where
+    => Super (NewlyAllocated sub) (NewSuper (ID super)) where
     super (NewlyAllocated x) = NewSuper x (castObject (classObject :: Class super))

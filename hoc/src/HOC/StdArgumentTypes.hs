@@ -74,8 +74,6 @@ instance ObjCArgument String where
     withExportedArgument arg action =
         bracket (withUTF8String arg utf8ToNSString) releaseObject action
     exportArgument arg = do
-        nsstr <- withUTF8String arg utf8ToNSString
-        autoreleaseObject nsstr
-        return nsstr
+        withUTF8String arg utf8ToNSString >>= autoreleaseObject
     importArgument arg = nsStringToUTF8 arg >>= peekArray0 0
                          >>= return . utf8ToUnicode

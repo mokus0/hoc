@@ -19,15 +19,12 @@ Library
   ghc-options:          -Wall
   hs-source-dirs:       src
   exposed-modules:      HOC.CBits
-                        HOC.CBits.FFICallInterface
                         HOC.CBits.Marshalling
                         HOC.CBits.MemoryManagement
-                        HOC.CBits.MsgSend
                         HOC.CBits.Statistics
                         HOC.CBits.Types
     
-  c-sources:            cbits/FFICallInterface.m
-                        cbits/Marshalling.m
+  c-sources:            cbits/Marshalling.m
                         cbits/MemoryManagement.m
                         cbits/Methods.m
                         cbits/Statistics.m

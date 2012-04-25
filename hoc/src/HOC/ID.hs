@@ -63,7 +63,9 @@ instance ObjCArgument (ID a) where
                       , show hso, "(" ++ show (length (hsoData hso)), "dynamics)"]
             when isNew $ do
                 alterImportedObjectCount succ
-                addHSOFinalizer hso (alterImportedObjectCount pred)
+                addHSOFinalizer hso $ do
+                    dPutWords ["released object", show hso]
+                    alterImportedObjectCount pred
             
             return (ID hso)
 

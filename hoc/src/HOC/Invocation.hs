@@ -2,7 +2,6 @@
 {-# LANGUAGE TypeFamilies #-}
 module HOC.Invocation where
 
-import Foreign.C                    ( CInt )
 import Foreign.LibFFI.Experimental  ( CIF, RetType, withInRet, ArgType, peekArg )
 import Foreign.ObjC                 ( objc_ffi_call )
 import Foreign.Ptr                  ( Ptr, castPtr, nullPtr, FunPtr )

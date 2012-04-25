@@ -3,9 +3,11 @@ module HOC.DeclareSelector where
     
 import Control.Monad            ( MonadPlus(mplus) )
 import Data.Maybe               ( fromMaybe )
+import Data.List                ( nub )
 import HOC.Arguments            ( ForeignSig, DropSelTarget )
+import HOC.Class                ( ClassAndObject )
 import HOC.ID                   ( ID )
-import HOC.MessageTarget        ( MessageTarget )
+import HOC.MessageTarget        ( MessageTarget, Object, CovariantReturnTarget(..) )
 import HOC.NewlyAllocated       ( NewlyAllocated )
 import HOC.SelectorMarshaller
 import HOC.SelectorNameMangling ( mangleSelectorName )
@@ -55,7 +57,7 @@ declareRenamedSelector name haskellName typeSigQ =
                 (ConT con) `AppT` ty
                     | con == ''IO -> (False, ty)
                     | otherwise -> badType
-                ty -> badType
+                _ -> badType
                 where
                     badType = error $ haskellName ++ " --- selector type must be in the IO monad"
   
@@ -67,22 +69,22 @@ declareRenamedSelector name haskellName typeSigQ =
             
             -- resultType --
             -- given a type, returns the return value, all applications
-            resultType (ForallT vars ctxt ty) = resultType ty
+            resultType (ForallT _ _ ty) = resultType ty
             resultType ((ArrowT `AppT` _) `AppT` rest) = resultType rest
             resultType other = other
             
             -- countArgs
             -- return the number of arguments that the function takes.
-            countArgs (ForallT vars ctxt ty) = countArgs ty
+            countArgs (ForallT _ _ ty) = countArgs ty
             countArgs ((ArrowT `AppT` _) `AppT` rest) = 1 + countArgs rest
-            countArgs other = 0
+            countArgs _ = 0
             
             -- substitute the result of the second argument for the first from 
             -- within arrows and foralls only.
             replaceResult new (ForallT vars ctxt ty) = ForallT vars ctxt (replaceResult new ty)
             replaceResult new ((ArrowT `AppT` arg) `AppT` rest) =
                 (ArrowT `AppT` arg) `AppT` replaceResult new rest
-            replaceResult new result = new
+            replaceResult new _ = new
 
             -- this takes:
             -- forall <names> (context). (forall <names>' (context'). type')
@@ -92,7 +94,7 @@ declareRenamedSelector name haskellName typeSigQ =
             liftForalls (ForallT names cxt ty)
                 = case liftForalls ty of
                     ForallT names' cxt' ty'
-                        -> ForallT (names ++ names') (cxt ++ cxt') ty'
+                        -> ForallT (nub (names ++ names')) (nub (cxt ++ cxt')) ty'
                     ty' -> ForallT names cxt ty'
             liftForalls other = other
             
@@ -112,21 +114,19 @@ declareRenamedSelector name haskellName typeSigQ =
                     (
                         retained,
                         liftForalls $
-                        (if needInstance
-                            then ForallT (map (PlainTV . mkName) ["target", "inst"])
-                                 [ClassP (mkName className) [VarT (mkName "target")],
-                                  ClassP (mkName "ClassAndObject") [VarT (mkName "target"),
-                                                                    VarT (mkName "inst")]]
-                            else ForallT [PlainTV $ mkName "target"]
-                                 [ClassP (mkName className) [VarT (mkName "target")]]) $
+                        applyCxts (classCxt : extraCxts) $
                         replaceResult (
                             (ArrowT `AppT` (fromMaybe (VarT $ mkName "target") targetType))
                             `AppT` covariantResult
                         ) ty
                     )
                 where
-                    (retained, needInstance, targetType, covariantResult) =
+                    (retained, extraCxts, targetType, covariantResult) =
                         doctorCovariant $ resultType ty
+                    applyCxts [] = id
+                    applyCxts ((ts, p):rest) = ForallT (map (PlainTV . mkName) ts) [p] . applyCxts rest
+                    
+                    classCxt = (["target"], ClassP (mkName className) [VarT (mkName "target")])
             -- 
             -- doctorCovariant --
             -- The values returned in the 4-tuple are:
@@ -152,42 +152,47 @@ declareRenamedSelector name haskellName typeSigQ =
             -- detected.  It has to be specified in the binding script.
             doctorCovariant (ConT con)
                 | con == ''Covariant =
-                    (False, False, Nothing, VarT $ mkName "target")
+                    (False, [covariantCxt], Nothing, covariantTarget)
                 | con == ''CovariantInstance =
-                    (False, True, Nothing, VarT $ mkName "inst")
+                    (False, [instCxt], Nothing, VarT $ mkName "inst")
                 | con == ''Allocated =
-                    (False, True, Nothing,
-                        ConT ''NewlyAllocated `AppT` VarT (mkName "inst"))
+                    (False, [instCxt], Nothing, newlyAllocated "inst")
                 | con == ''Inited =
-                    (True, False,
-                        Just (ConT ''NewlyAllocated `AppT` VarT (mkName "target")),
-                                    VarT (mkName "target"))
-            
+                    (True, [covariantCxt], Just (newlyAllocated "target"), covariantTarget)
+                where
+                    newlyAllocated ty = ConT ''NewlyAllocated `AppT` VarT (mkName ty)
+                    covariantTarget = ConT ''CovariantReturn  `AppT` VarT (mkName "target")
+                    instCxt  = (["target", "inst"],
+                        ClassP ''ClassAndObject [VarT (mkName "target"),
+                                                 VarT (mkName "inst")])
+                    covariantCxt = (["target"],
+                        ClassP ''CovariantReturnTarget [VarT (mkName "target")])
             -- 
             doctorCovariant (ConT con `AppT` ty) | con == ''Retained =
                     (True,inst', target', ty')
                 where (_,inst', target', ty') = doctorCovariant ty
 
             doctorCovariant (t1 `AppT` t2) =
-                    (retained1 || retained2, needInst1 || needInst2, target1 `mplus` target2, t1' `AppT` t2')
+                    (retained1 || retained2, needInst1 ++ needInst2, target1 `mplus` target2, t1' `AppT` t2')
                 where (retained1, needInst1, target1, t1') = doctorCovariant t1
                       (retained2, needInst2, target2, t2') = doctorCovariant t2
 
-            doctorCovariant other = (False, False, Nothing, other)
+            doctorCovariant other = (False, [], Nothing, other)
 
             -- Reduce the type to a form that can be used for creating a libffi CIF
             -- using the ObjCIMPType type class:
 
-            simplifyType (ForallT vars ctxt ty) = simplifyType ty
+            simplifyType (ForallT _ _ ty) = simplifyType ty
             simplifyType ((ArrowT `AppT` arg) `AppT` rest) = (ArrowT `AppT` replaceVarByUnit arg)
                                                             `AppT` simplifyType rest
             simplifyType (ConT con `AppT` x) | con == ''IO = ConT ''IO `AppT` replaceVarByUnit x
             simplifyType x = replaceVarByUnit x
 
-            replaceVarByUnit (VarT var) = ConT ''ID `AppT` ConT ''()
+            replaceVarByUnit (VarT _) = ConT ''ID `AppT` ConT ''()
             replaceVarByUnit (ConT con `AppT` ty)
-                | con == ''NewlyAllocated = replaceVarByUnit ty
-            replaceVarByUnit (ConT cls `AppT` VarT var) = ConT cls `AppT` ConT ''()
+                | con == ''NewlyAllocated  = replaceVarByUnit ty
+                | con == ''CovariantReturn = replaceVarByUnit ty
+            replaceVarByUnit (ConT cls `AppT` VarT _) = ConT cls `AppT` ConT ''()
             replaceVarByUnit x = x
 
 
@@ -233,7 +238,8 @@ declareRenamedSelector name haskellName typeSigQ =
                     (mkName className) [PlainTV $ mkName "a"] [] [],
                 
                 -- instance $(className) a => $(className) (SuperTarget a)
-                instanceD (cxt [classP (mkName className) [varT (mkName "a")]])
+                instanceD (cxt [classP (mkName className) [varT (mkName "a")]
+                               ,classP ''Object           [varT (mkName "a")]])
                     (conT (mkName className) `appT` (conT ''SuperTarget `appT` varT (mkName "a")))
                     [],
                 

@@ -36,7 +36,7 @@ assertLeaks leaks action = do
     result <- action `finally` performGCAndWait targetCount 10000 25
     
     finalCount <- getImportedObjectCount
-    assertEqual "Leaks" (finalCount - initialCount) leaks
+    assertEqual "Leaks" leaks (finalCount - initialCount)
     return result
 
 assertNoLeaks action = assertLeaks 0 action
@@ -73,7 +73,7 @@ instance Has_rectValue (HaskellObjectWithDescription a)
 ho2_description self
     = do
         superDesc <- fmap fromNSString $ super self # description
-        return $ toNSString $ head (words superDesc) ++ " TEST>"
+        nsString $ head (words superDesc) ++ " TEST>"
 
 ho2_rectValue self = return (NSRect (NSPoint 100 200) (NSSize 300 400))
 

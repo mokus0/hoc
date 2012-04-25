@@ -2,18 +2,16 @@
              UndecidableInstances, FlexibleInstances,
              FlexibleContexts, TypeFamilies #-}
 module HOC.Super(
-        SuperClass, SuperTarget, Super(super), withExportedSuper, castSuper
+        SuperClass, SuperTarget, Super(super), castSuper
     ) where
 
-import Foreign.Marshal.Alloc    ( allocaBytes )
-import Foreign.ObjC             ( ObjCClass, ObjCObject )
+import Foreign.LibFFI.Experimental ( outByRef )
+import Foreign.ObjC             ( ObjCClass, ObjCSuper(..), msgSendSuperWith )
 import Foreign.Ptr              ( Ptr, nullPtr )
-import Foreign.Storable         ( pokeByteOff, sizeOf )
-import HOC.Arguments            ( ObjCArgument(..) )
+import HOC.Arguments            ( ObjCArgument(..), objcOutArg )
 import HOC.Class                ( RawStaticClass, rawStaticClassForObject )
 import HOC.ID                   ( ID, castObject )
-import HOC.MessageTarget        ( Object, MessageTarget(..) )
-import HOC.MsgSend
+import HOC.MessageTarget        ( Object(..), MessageTarget(..) )
 
 {-
     Messages to super.
@@ -33,23 +31,23 @@ class Super sub super | sub -> super where
 
 --- 
 
-pokeSuper objcSuper obj cls
-    = pokeByteOff objcSuper 0 obj >> pokeByteOff objcSuper (sizeOf obj) cls
-
-withExportedSuper p cls action = 
-    allocaBytes (sizeOf p + sizeOf cls) $ \sptr ->
-    pokeSuper sptr p cls >> action sptr
-
-instance MessageTarget a
+instance Object a
         => ObjCArgument (SuperTarget a) where
-    type ForeignArg (SuperTarget a) = Ptr ObjCObject
-
-    withExportedArgument (SuperTarget obj cls) action =
-        withExportedArgument obj $ \p ->
-        withExportedSuper p cls action
-        
-    exportArgument _ = fail "HOC.Super: exportArgument"
-    importArgument _ = fail "HOC.Super: importArgument"
+    type ForeignArg (SuperTarget a) = ObjCSuper
+    
+    withExportedArgument (SuperTarget obj cls) action = 
+        withExportedArgument obj $ \obj' -> 
+            action (ObjCSuper obj' cls)
+    
+    exportArgument (SuperTarget obj cls) = do
+        obj' <- exportArgument (toID obj)
+        return (ObjCSuper obj' cls)
+    exportArgumentRetained (SuperTarget obj cls) = do
+        obj' <- exportArgumentRetained (toID obj)
+        return (ObjCSuper obj' cls)
+    importArgument (ObjCSuper obj cls) = do
+        obj' <- importArgument obj
+        return (SuperTarget (fromID obj') cls)
 
 castSuper :: SuperClass (ID sub) (ID super) => ID sub -> ID super
 castSuper = castObject
@@ -60,8 +58,7 @@ instance (Object (ID sub), Object (ID super), SuperClass (ID sub) (ID super),
     super obj = SuperTarget (castSuper obj)
                     (rawStaticClassForObject (castSuper obj)) 
 
-instance MessageTarget a => MessageTarget (SuperTarget a) where
+instance Object a => MessageTarget (SuperTarget a) where
     isNil (SuperTarget x cls) = isNil x || cls == nullPtr
     
-    sendMessageWithRetval _ = superSendMessageWithRetval
-    sendMessageWithoutRetval _ = superSendMessageWithoutRetval
+    sendMessage = msgSendSuperWith (outByRef objcOutArg)

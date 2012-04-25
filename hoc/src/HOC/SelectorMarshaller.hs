@@ -8,12 +8,9 @@ module HOC.SelectorMarshaller(
         marshallerName
     ) where
 
-import Foreign                      ( withArray )
-import Foreign.LibFFI.Experimental  ( CIF, cif, withOutArg )
-import Foreign.ObjC                 ( ObjCObject, SEL, getSEL )
-import Foreign.Ptr                  ( Ptr, castPtr )
+import Foreign.ObjC                 ( SEL, getSEL )
 import GHC.Base                     ( unpackCString# )
-import HOC.Arguments                ( objcOutArg )
+import HOC.Arguments                ( importArgument, withExportedArgument )
 import HOC.MessageTarget
 import HOC.TH
 import System.IO.Unsafe             ( unsafePerformIO )
@@ -21,19 +18,18 @@ import System.IO.Unsafe             ( unsafePerformIO )
 data SelectorInfo a = SelectorInfo {
         selectorInfoObjCName :: String,
         selectorInfoHaskellName :: String,
-        selectorInfoCif :: !(CIF (Ptr ObjCObject -> SEL a -> a)),
         selectorInfoSel :: !(SEL a),
         selectorInfoResultRetained :: !Bool
     }
 
 {-# NOINLINE mkSelectorInfo #-}
 mkSelectorInfo objCName hsName
-    = SelectorInfo objCName hsName cif (getSEL objCName) False
+    = SelectorInfo objCName hsName (getSEL objCName) False
 
 {-# NOINLINE mkSelectorInfo# #-}
 mkSelectorInfo# objCName# hsName#
     -- NOTE: Don't call mkSelectorInfo here, the rule would apply!
-    = SelectorInfo objCName hsName cif (getSEL objCName) False
+    = SelectorInfo objCName hsName (getSEL objCName) False
     where
         objCName = unpackCString# objCName#
         hsName   = unpackCString# hsName#
@@ -46,12 +42,12 @@ mkSelectorInfo# objCName# hsName#
 
 {-# NOINLINE mkSelectorInfoRetained #-}
 mkSelectorInfoRetained objCName hsName
-    = SelectorInfo objCName hsName cif (getSEL objCName) True
+    = SelectorInfo objCName hsName (getSEL objCName) True
 
 {-# NOINLINE mkSelectorInfoRetained# #-}
 mkSelectorInfoRetained# objCName# hsName#
     -- NOTE: Don't call mkSelectorInfo here, the rule would apply!
-    = SelectorInfo objCName hsName cif (getSEL objCName) True
+    = SelectorInfo objCName hsName (getSEL objCName) True
     where
         objCName = unpackCString# objCName#
         hsName   = unpackCString# hsName#
@@ -75,41 +71,31 @@ makeMarshaller maybeInfoName haskellName nArgs isUnit isPure isRetained =
                     Just name -> (varE name, [])
                     Nothing -> (varE (mkName "info"), [mkName "info"])
         arguments = [ "arg" ++ show i | i <- [1..nArgs] ]
-        argumentsToMarshal = varE (mkName "target")
-                           : [| selectorInfoSel $(infoVar) |]
-                           : map (varE.mkName) arguments
-        marshalledArguments = mkName "target'"
-                            : mkName "selector'"
-                            : map (mkName . (++"'")) arguments
+        argumentsToMarshal = map (varE.mkName) arguments
+        marshalledArguments = map (mkName . (++"'")) arguments
    
         marshallerBody = purify $
                          checkTargetNil $
                          releaseRetvalIfRetained $
                          marshallArgs  $
-                         collectArgs $
+                         marshallReturn $
                          invoke
-
+        
         marshallArgs = marshallArgs' argumentsToMarshal marshalledArguments
             where
                 marshallArgs' [] [] e = e
                 marshallArgs' (arg:args) (arg':args') e =
-                    [| withOutArg objcOutArg $arg $(lamE [varP arg'] e') |]
+                    [| withExportedArgument $arg $(lamE [varP arg'] e') |]
                     where e' = marshallArgs' args args' e
-   
-        collectArgs e = [| withArray $(listE [ [| castPtr $(varE arg) |]
-                                             | arg <- marshalledArguments
-                                             ])
-                                     $(lamE [varP $ mkName "args"] e) |]
-
-        invoke | isUnit = [| sendMessageWithoutRetval $(targetVar)
-                                                      (selectorInfoCif $(infoVar))
-                                                      $(argsVar)|]
-               | otherwise = [| sendMessageWithRetval $(targetVar)
-                                                      (selectorInfoCif $(infoVar))
-                                                      $(argsVar)|]
-            where argsVar = varE $ mkName "args"
-                  targetVar = varE $ mkName "target"
-
+        
+        invoke = appsE
+                ( [| sendMessage $targetVar (selectorInfoSel $infoVar) |] 
+                : map varE marshalledArguments)
+            where
+                targetVar = varE (mkName "target")
+        
+        marshallReturn e = [| $e >>= importArgument |]
+        
         purify e | isPure = [| unsafePerformIO $(e) |]
                  | otherwise = e
                  
