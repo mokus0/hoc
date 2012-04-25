@@ -43,7 +43,6 @@ Library
                         HOC.TH
                         HOC.Unicode
                         HOC.Utilities
-                        HOC.THDebug
                         HOC.CStruct
   
   if os(darwin)
