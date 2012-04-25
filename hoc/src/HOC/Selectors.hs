@@ -2,6 +2,7 @@
 module HOC.Selectors where
 
 import HOC.TH
+import Language.Haskell.TH
 import HOC.SelectorMarshaller ( SelectorInfo(..) )
 
 sel n = [| selectorInfoSel $(varE selInfo) |]

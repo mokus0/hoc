@@ -1,5 +1,4 @@
 module HOC.TH(
-        module Language.Haskell.TH,
         mkNameG_v,
         mkNameG_tc,
         mkNameG_d,

@@ -3,7 +3,7 @@ module HOC.DeclareClass(declareClass) where
 
 import HOC.Class
 import HOC.Super
-import HOC.TH
+import Language.Haskell.TH
 
 declareClass :: String -> String -> Q [Dec]
 

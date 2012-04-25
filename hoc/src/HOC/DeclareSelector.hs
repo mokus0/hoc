@@ -14,6 +14,7 @@ import HOC.SelectorNameMangling ( mangleSelectorName )
 import HOC.StdArgumentTypes     ( {- instances -} )
 import HOC.Super                ( SuperTarget )
 import HOC.TH
+import Language.Haskell.TH
 
 data Covariant
 data CovariantInstance

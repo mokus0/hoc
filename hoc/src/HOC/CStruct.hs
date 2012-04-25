@@ -13,7 +13,7 @@ import Foreign.LibFFI.Experimental
 import Foreign.ObjC
 import HOC.Arguments        ( ObjCArgument(..) )
 import HOC.NameCaseChange   ( nameToUppercase )
-import HOC.TH
+import Language.Haskell.TH
 
 declareCStruct :: String -> [TypeQ] -> Q [Dec]
 declareCStructWithTag :: String -> Maybe String -> [TypeQ] -> Q [Dec]

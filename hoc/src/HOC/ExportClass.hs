@@ -17,13 +17,13 @@ import Foreign.LibFFI.Experimental  ( cif, pokeRet )
 import Foreign.ObjC
 import Foreign.ObjC.HSObject        ( registerHSObjectClass )
 import Foreign.Ptr                  ( Ptr, castPtr )
-import HOC.Arguments                ( objcOutRet )
+import HOC.Arguments                ( objcOutRet, getMarshalledArgument )
 import HOC.CBits
 import HOC.ID                       ( ID(..), nil, idData )
-import HOC.Invocation               ( getMarshalledArgument )
 import HOC.MessageTarget            ( Object(..) )
 import HOC.SelectorMarshaller       ( SelectorInfo(..) )
 import HOC.TH
+import Language.Haskell.TH
 
 data ClassMember =
         InstanceMethod Name

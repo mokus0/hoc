@@ -7,7 +7,7 @@ import Foreign.Storable     ( Storable(peek) )
 import HOC.Arguments        ( ObjCArgument(importArgument), ForeignArg )
 import HOC.Dyld             ( lookupSymbol )
 import HOC.NameCaseChange   ( nameToLowercase )
-import HOC.TH
+import Language.Haskell.TH
 import System.IO.Unsafe     ( unsafePerformIO )
 
 declareExternConst :: String -> TypeQ -> Q [Dec]

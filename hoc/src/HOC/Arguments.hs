@@ -4,6 +4,8 @@ module HOC.Arguments where
 
 import Foreign.LibFFI.Experimental
 import Foreign.ObjC
+import Foreign.Ptr
+import Foreign.Storable
 
 -- ObjCArgument is the type class for Objective C arguments.
 -- exportArgument is the FFIType type used when exporting this type.
@@ -60,3 +62,8 @@ type instance SelType (a -> IO b) = a -> SEL (IO b) -> IO b
 type instance SelType (a -> b -> c) = SelTarget (b -> c) -> SEL (a -> DropSelTarget (b -> c)) -> a -> DropSelTarget (b -> c)
 
 type ForeignSel a = SelType (ForeignSig a)
+
+getMarshalledArgument :: (ObjCArgument a, ArgType (ForeignArg a)) => Ptr (Ptr ()) -> Int -> IO a
+getMarshalledArgument args idx = do
+    p <- peekElemOff args idx
+    peekArg objcInArg (castPtr p)

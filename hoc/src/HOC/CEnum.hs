@@ -9,6 +9,7 @@ import Foreign.C        ( CInt )
 import HOC.Arguments    ( ObjCArgument(..) )
 import HOC.NameCaseChange
 import HOC.TH
+import Language.Haskell.TH
 
 class CEnum a where
     fromCEnum :: a -> CInt

@@ -12,7 +12,7 @@ import Foreign.ObjC                 ( SEL, getSEL )
 import GHC.Base                     ( unpackCString# )
 import HOC.Arguments                ( importArgument, withExportedArgument )
 import HOC.MessageTarget
-import HOC.TH
+import Language.Haskell.TH
 import System.IO.Unsafe             ( unsafePerformIO )
 
 data SelectorInfo a = SelectorInfo {

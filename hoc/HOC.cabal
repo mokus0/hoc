@@ -35,7 +35,6 @@ Library
                         HOC.ExternFunctions
                         HOC.ID
                         HOC.MessageTarget
-                        HOC.Invocation
                         HOC.NewlyAllocated
                         HOC.SelectorMarshaller
                         HOC.Selectors
