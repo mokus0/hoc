@@ -61,4 +61,4 @@ instance (Object (ID sub), Object (ID super), SuperClass (ID sub) (ID super),
 instance Object a => MessageTarget (SuperTarget a) where
     isNil (SuperTarget x cls) = isNil x || cls == nullPtr
     
-    sendMessage = msgSendSuperWith (outByRef objcOutArg)
+    sendMessageWith = msgSendSuperWith (outByRef objcOutArg)

@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeFamilies #-}
 module HOC.MessageTarget where
 
-import Foreign.LibFFI.Experimental  ( Dynamic )
+import Foreign.LibFFI.Experimental  ( SigType, Dynamic, Dyn, dyn )
 import Foreign.ObjC                 ( ObjCObject, SEL, releaseObject, msgSendWith )
 import Foreign.Ptr                  ( Ptr )
 import HOC.Arguments                ( ObjCArgument(..), objcOutArg )
@@ -11,7 +11,10 @@ import HOC.ID                       ( ID(..), nil, castObject )
 class ObjCArgument a => MessageTarget a where
     isNil :: a -> Bool
     
-    sendMessage :: Dynamic b => a -> SEL b -> b
+    sendMessageWith :: SigType b => Dyn b c -> a -> SEL b -> c
+
+sendMessage :: (MessageTarget a, Dynamic b) => a -> SEL b -> b
+sendMessage = sendMessageWith dyn
 
 class
     ( MessageTarget a
@@ -28,7 +31,7 @@ class (MessageTarget a, ForeignArg a ~ Ptr ObjCObject) => Object a where
 instance MessageTarget (ID a) where
     isNil x = x == nil
     
-    sendMessage = msgSendWith objcOutArg
+    sendMessageWith = msgSendWith objcOutArg
 
 instance CovariantReturnTarget (ID a)
 

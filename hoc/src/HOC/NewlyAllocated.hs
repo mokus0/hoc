@@ -13,8 +13,8 @@ module HOC.NewlyAllocated where
     the call to alloc and the call to init.
 -}
 
-import Foreign.LibFFI.Experimental ( outByRef )
-import Foreign.ObjC     ( ObjCObject, ObjCSuper(..), msgSend, msgSendSuperWith )
+import Foreign.LibFFI.Experimental ( outArg, outByRef )
+import Foreign.ObjC     ( ObjCObject, ObjCSuper(..), msgSendWith, msgSendSuperWith )
 import Foreign.Ptr      ( Ptr, castPtr, nullPtr )
 import HOC.Arguments    ( ObjCArgument(..), objcOutArg )
 import HOC.Class        ( Class, ClassObject(classObject) )
@@ -51,12 +51,12 @@ instance ObjCArgument (NewSuper a) where
 -- safety)..
     
 instance MessageTarget (NewlyAllocated a) where
-    isNil       (NewlyAllocated obj) = obj == nullPtr
-    sendMessage (NewlyAllocated obj) = msgSend obj
+    isNil             (NewlyAllocated obj) = obj == nullPtr
+    sendMessageWith d (NewlyAllocated obj) = msgSendWith outArg d obj
 
 instance MessageTarget (NewSuper a) where
-    isNil       (NewSuper obj cls) = (obj == nullPtr) || isNil cls
-    sendMessage = msgSendSuperWith (outByRef objcOutArg)
+    isNil (NewSuper obj cls) = (obj == nullPtr) || isNil cls
+    sendMessageWith = msgSendSuperWith (outByRef objcOutArg)
 
 instance (SuperClass sub (ID super), ClassObject (Class super))
     => Super (NewlyAllocated sub) (NewSuper (ID super)) where
