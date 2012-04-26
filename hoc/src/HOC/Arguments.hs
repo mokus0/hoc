@@ -1,9 +1,9 @@
 {-# LANGUAGE TemplateHaskell, EmptyDataDecls, TypeFamilies,
-             FlexibleContexts, ScopedTypeVariables, DefaultSignatures #-}
+             FlexibleContexts, ScopedTypeVariables, DefaultSignatures, 
+             UndecidableInstances #-}
 module HOC.Arguments where
 
 import Foreign.LibFFI.Experimental
-import Foreign.ObjC
 import Foreign.Ptr
 import Foreign.Storable
 
@@ -49,19 +49,18 @@ type family ForeignSig a
 type instance ForeignSig (IO a) = IO (ForeignArg a)
 type instance ForeignSig (a -> b) = ForeignArg a -> ForeignSig b
 
-type family SelTarget a
-type instance SelTarget (a -> IO b) = a
-type instance SelTarget (a -> b -> c) = SelTarget (b -> c)
+class SigType (ForeignSig t) => ObjCSig t where
+    objcDyn :: Dyn (ForeignSig t) t
+
+instance (ObjCArgument a, RetType (ForeignArg a)) => ObjCSig (IO a) where
+    objcDyn = mkDyn objcInRet
+
+instance (ObjCArgument a, ArgType (ForeignArg a), ObjCSig b) => ObjCSig (a -> b) where
+    objcDyn = consDyn objcOutArg objcDyn
 
 type family DropSelTarget a
 type instance DropSelTarget (a -> IO b) = IO b
 type instance DropSelTarget (a -> b -> c) = a -> DropSelTarget (b -> c)
-
-type family SelType a
-type instance SelType (a -> IO b) = a -> SEL (IO b) -> IO b
-type instance SelType (a -> b -> c) = SelTarget (b -> c) -> SEL (a -> DropSelTarget (b -> c)) -> a -> DropSelTarget (b -> c)
-
-type ForeignSel a = SelType (ForeignSig a)
 
 getMarshalledArgument :: (ObjCArgument a, ArgType (ForeignArg a)) => Ptr (Ptr ()) -> Int -> IO a
 getMarshalledArgument args idx = do

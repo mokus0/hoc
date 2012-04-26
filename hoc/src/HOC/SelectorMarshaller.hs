@@ -10,7 +10,6 @@ module HOC.SelectorMarshaller(
 
 import Foreign.ObjC                 ( SEL, getSEL )
 import GHC.Base                     ( unpackCString# )
-import HOC.Arguments                ( importArgument, withExportedArgument )
 import HOC.MessageTarget
 import Language.Haskell.TH
 import System.IO.Unsafe             ( unsafePerformIO )
@@ -61,58 +60,41 @@ mkSelectorInfoRetained# objCName# hsName#
 
 makeMarshaller maybeInfoName haskellName nArgs isUnit isPure isRetained =
             funD haskellName [
-                clause (map varP $ infoArgument ++ map mkName arguments
-                        ++ [mkName "target"])
-                     (normalB $ marshallerBody
-                    ) []
+                clause (map varP $ infoArgument ++ arguments ++ [target])
+                       (normalB  $ marshallerBody) []
             ]
     where
         (infoVar, infoArgument) = case maybeInfoName of
                     Just name -> (varE name, [])
                     Nothing -> (varE (mkName "info"), [mkName "info"])
-        arguments = [ "arg" ++ show i | i <- [1..nArgs] ]
-        argumentsToMarshal = map (varE.mkName) arguments
-        marshalledArguments = map (mkName . (++"'")) arguments
-   
-        marshallerBody = purify $
-                         checkTargetNil $
-                         releaseRetvalIfRetained $
-                         marshallArgs  $
-                         marshallReturn $
-                         invoke
         
-        marshallArgs = marshallArgs' argumentsToMarshal marshalledArguments
-            where
-                marshallArgs' [] [] e = e
-                marshallArgs' (arg:args) (arg':args') e =
-                    [| withExportedArgument $arg $(lamE [varP arg'] e') |]
-                    where e' = marshallArgs' args args' e
+        target    =   mkName "target"
+        arguments = [ mkName ("arg" ++ show i) | i <- [1..nArgs] ]
         
-        invoke = appsE
-                ( [| sendMessage $targetVar (selectorInfoSel $infoVar) |] 
-                : map varE marshalledArguments)
-            where
-                targetVar = varE (mkName "target")
+        targetE = varE target
+        msgSendE = [| sendMessage $targetE (selectorInfoSel $infoVar) |]
         
-        marshallReturn e = [| $e >>= importArgument |]
+        marshallerBody =
+              (if isPure then purify else id)
+            . checkTargetNil
+            . (if isRetained then releaseRetval else id)
+            $ invoke
         
-        purify e | isPure = [| unsafePerformIO $(e) |]
-                 | otherwise = e
-                 
-        releaseRetvalIfRetained e | isRetained = [| $e >>= releaseExtraReference |]
-                                  | otherwise = e
-                                  
-        checkTargetNil e = [| failNilMessage $(varE $ mkName "target")
-                                             (selectorInfoHaskellName $(infoVar))
-                              >> $(e) |]
-    
-makeMarshallers n =
-        sequence $
-        [ makeMarshaller Nothing (mkName $ marshallerName nArgs isUnit) nArgs isUnit False False
-        | nArgs <- [0..n], isUnit <- [False, True] ]
+        invoke = appsE (msgSendE : map varE arguments)
+        
+        purify        e = [| unsafePerformIO $e |]
+        releaseRetval e = [| $e >>= releaseExtraReference |]
+        
+        checkTargetNil e =
+            [| failNilMessage $targetE (selectorInfoHaskellName $infoVar) >> $e |]
+
+makeMarshallers n = sequence
+    [ makeMarshaller Nothing (mkName $ marshallerName nArgs isUnit) nArgs isUnit False False
+    | nArgs <- [0..n], isUnit <- [False, True]
+    ]
 
 marshallerName nArgs False = "method" ++ show nArgs
-marshallerName nArgs True = "method" ++ show nArgs ++ "_"
+marshallerName nArgs True  = "method" ++ show nArgs ++ "_"
 
 failNilMessage :: MessageTarget t => t -> String -> IO ()
 failNilMessage target selectorName
