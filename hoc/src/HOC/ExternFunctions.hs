@@ -7,7 +7,7 @@ import Foreign.Ptr                  ( FunPtr )
 import HOC.Arguments                ( ForeignSig, ObjCSig(..) )
 import HOC.Dyld                     ( lookupSymbol )
 import HOC.NameCaseChange           ( nameToLowercase )
-import Language.Haskell.TH hiding (dyn)
+import Language.Haskell.TH
 import System.IO.Unsafe             ( unsafePerformIO )
 
 objCCall :: ObjCSig a => FunPtr (ForeignSig a) -> a
