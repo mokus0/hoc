@@ -19,12 +19,9 @@ import Files
 
 import Progress
 
-#ifdef BINARY_INTERFACES
 import Data.Binary      ( encodeFile, decode )
 import BinaryInstances  ()
 import qualified Data.ByteString.Lazy as LBS
-#endif
-
 
 import Headers              -- (on disk) -> [HeaderInfo]
 import HackEnumNames        -- HeaderInfo -> HeaderInfo
@@ -70,32 +67,21 @@ writeFrameworkModules progress entityPile path
                             show $ pprHsModule entityPile modGraph modName entities
                         reportProgress progress nModules
 
-#ifdef BINARY_INTERFACES
 decodeFileWithProgress :: ProgressReporter -> FilePath -> IO EntityMap
 decodeFileWithProgress progress fn
     = do
         bs <- fmap LBS.toChunks $ LBS.readFile fn
         let n = length bs
         return $ decode $ LBS.fromChunks $ monitorList progress n $ bs
-#endif
 
 readInterfaceFileWithProgress :: ProgressReporter -> FilePath -> IO EntityMap
 readInterfaceFileWithProgress progress fn
-#ifdef BINARY_INTERFACES
     = decodeFileWithProgress progress fn
-#else
-    = fmap read $ readFileWithProgress progress fn
-#endif
 
 writeInterfaceFileWithProgress :: ProgressReporter -> FilePath -> EntityPile -> IO ()
 writeInterfaceFileWithProgress progress fn entities
-#ifdef BINARY_INTERFACES
     = encodeFile fn $
         monitor progress $ localEntities $ entities
-#else
-    = writeFileIfChanged fn $ 
-        show $ monitor progress $ localEntities $ entities
-#endif
 
 data HeaderDirectory
     = FrameworkHeaders String
