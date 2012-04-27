@@ -1,8 +1,6 @@
 module Traversals where
 
 import Entities
-import Control.Exception
-
 import Data.Generics
 
 mapEntityIDs :: (EntityID -> EntityID) -> Entity -> Entity
@@ -47,7 +45,3 @@ foreachIDInEntity f e
 
 mentionedEntityIDs :: Entity -> [EntityID]
 mentionedEntityIDs = listify (const True)
-
-deepEvaluateEntity :: Entity -> IO ()
-deepEvaluateEntity x
-    = everywhereM evaluate x >> return ()

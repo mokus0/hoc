@@ -4,7 +4,6 @@ import Control.Concurrent   ( Chan, newChan, writeChan, readChan,
                               newMVar, withMVar, takeMVar,
                               forkIO, killThread )
 import Control.Exception    ( block )
-import Control.Monad        ( when )
 import System.IO.Unsafe     ( unsafePerformIO )
 import System.Time
 import qualified Data.Map as Map
@@ -31,24 +30,6 @@ monitor1 (ProgressChan _ chan) n x
         writeChan chan (n)
         return x
         
-runShowingProgress :: String -> (ProgressReporter -> IO a) -> IO a
-runShowingProgress msg action
-    = do
-        putStr $ msg ++ "\n\x1b[A"
-        chan <- newChan
-        reporterThread <- forkIO (reportLoop chan 0 (-1))
-        result <- action (ProgressChan undefined chan)
-        killThread reporterThread
-        putStrLn $ msg ++ ": done."
-        return result
-    where
-        reportLoop chan i reported = do
-            n <- readChan chan
-            let percent = (i * 100) `div` n
-            when (percent > reported) $
-                block (putStr $ msg ++ ": " ++ show percent ++ "%\n\x1b[A")
-            reportLoop chan (i+1) (max percent reported)
-
 reportProgressForMap pr m = 
         Map.map (monitor1 pr n) m
     where
@@ -157,22 +138,13 @@ openMultiProgress reporters'
                         else                     
                             loop (i+1) reported reportedTOD
 
-    
 closeMultiProgress :: MultiProgress -> IO ()
 closeMultiProgress (MultiProgress finish)
     = finish
-    
-runMultiProgress :: [ProgressReporter] -> IO a -> IO a
-runMultiProgress reporters action
-    = do
-        mp <- openMultiProgress reporters
-        result <- action
-        closeMultiProgress mp
-        return result
 
 class Monitorable a where
     monitor :: ProgressReporter -> a -> a
-    
+
 instance Ord a => Monitorable (Map.Map a b) where
     monitor NoProgress m = m
     monitor pr m = let n = Map.size m in Map.map (monitor1 pr n) m

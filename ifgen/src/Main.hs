@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP #-}
-module Main where
+module Main (main) where
 
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.Map as Map
@@ -69,13 +69,6 @@ writeFrameworkModules progress entityPile path
                         writeFileIfChanged (hsModulePathForModule modName) $
                             show $ pprHsModule entityPile modGraph modName entities
                         reportProgress progress nModules
-
-readFileWithProgress :: ProgressReporter -> FilePath -> IO String
-readFileWithProgress progress fn
-    = do
-        bs <- BS.readFile fn
-        let n = BS.length bs
-        return $ monitorList progress n $ BS.unpack bs
 
 #ifdef BINARY_INTERFACES
 decodeFileWithProgress :: ProgressReporter -> FilePath -> IO EntityMap

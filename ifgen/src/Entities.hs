@@ -89,7 +89,7 @@ type EntityMap = Map.Map EntityID Entity
 data EntityPile = EntityPile {
         epEntities :: EntityMap,
         epFrameworkEntities :: EntityMap,
-        epNextID :: Int
+        _epNextID :: Int
     }
     deriving ( Read, Show, Typeable, Data )
 
@@ -131,12 +131,6 @@ makeEntityPileIndex :: Ord a => (Entity -> a) -> EntityPile -> Map.Map a EntityI
 makeEntityPileIndex f entityPile
     = Map.fromList [ (f entity, id)
                    | (id, entity) <- entityPileToList entityPile ]
-
-makeEntityPileMultiIndex :: Ord a => (Entity -> a) -> EntityPile -> Map.Map a (Set.Set EntityID)
-makeEntityPileMultiIndex f entityPile
-    = Map.fromListWith Set.union
-        [ (f entity, Set.singleton id)
-        | (id, entity) <- entityPileToList entityPile ]
 
 makeEntityPileLocalMultiIndex :: Ord a => (Entity -> a) -> EntityPile -> Map.Map a (Set.Set EntityID)
 makeEntityPileLocalMultiIndex f entityPile
