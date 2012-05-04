@@ -44,16 +44,6 @@ renameToFramework eMap framework
 -- *****************************************************************************
 
 makeEntities :: BindingScript -> [HeaderInfo] -> EntityPile -> EntityPile
-
-assertHaskellTypeName :: BS.ByteString -> BS.ByteString
-assertHaskellTypeName xs
-    | not (BS.null xs)
-    && isUpper x && BS.all (\c -> isAlphaNum c || c `elem` "_'") xs
-    = xs
-    where
-        x = BS.head xs
-
--- loadedHeaders
 makeEntities bindingScript headers importedEntities
     = flip execState importedEntities $ do
             sequence_ [
@@ -70,7 +60,15 @@ makeEntities bindingScript headers importedEntities
                 ]
             mapM_ makeEntitiesForHeader headers
     where
+        assertHaskellTypeName :: BS.ByteString -> BS.ByteString
+        assertHaskellTypeName xs
+            | not (BS.null xs)
+            && isUpper x && BS.all (\c -> isAlphaNum c || c `elem` "_'") xs
+            = xs
+            where
+                x = BS.head xs
         modNames = Set.fromList [ modName | HeaderInfo modName _ _ <- headers ]
+        
         makeEntitiesForHeader (HeaderInfo modName _ decl)
             = mapM_ (makeEntity modName) decl
         
