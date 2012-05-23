@@ -5,6 +5,7 @@ module HOC.CEnum
     , declareAnonymousCEnum
     ) where
 
+import Control.Monad    ( liftM2 )
 import Foreign.C        ( CInt )
 import HOC.Arguments    ( ObjCArgument(..) )
 import HOC.NameCaseChange
@@ -59,11 +60,13 @@ declareCEnum name assocs
                         mkCaseMap $ zip (map (litP . integerL) values)
                                     (map conE constructors)) []
                 ],
-            instanceD (cxt []) (conT ''ObjCArgument `appT` conT typ `appT` [t| CInt |])
-                `whereQ` [d|
-                    exportArgument = return . fromCEnum
-                    importArgument = return . toCEnum
-                |]
+            instanceD (cxt []) (conT ''ObjCArgument `appT` conT typ)
+                `whereQ` liftM2 (:)
+                    (tySynInstD ''ForeignArg [conT typ] [t| CInt |])
+                    [d|
+                        exportArgument = return . fromCEnum
+                        importArgument = return . toCEnum
+                    |]
         ] ++ [
             valD (varP constant) (normalB $ conE constructor) []
             | (constant, constructor) <- zip constants constructors
