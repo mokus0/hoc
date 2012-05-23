@@ -1,35 +1,43 @@
-set -x
-function build()
+#!/bin/bash
+
+ARGS=( "$@" )
+OPTS=( )
+SUDO=
+
+IFGEN=hoc-ifgen
+
+function generate()
 {
-    pushd HOC-$1
-    runhaskell Setup.hs configure $ARGUMENTS
-    runhaskell Setup.hs build
-    runhaskell Setup.hs install
-    popd
+    "$IFGEN" "$@" "${OPTS[@]}"
 }
 
-ARGUMENTS=$*
-OPTS=
-
-IFGEN="hoc-ifgen"
-
-if [ "$HOC_SDK" != "" ];
-then
-    IFGEN="$IFGEN -s $HOC_SDK"
-fi
+function build()
+{ (
+    set -e
+    cd HOC-$1
+    cabal configure "${ARGS[@]}"
+    cabal build
+    "$SUDO" cabal install
+  )
+}
 
 set -e
 mkdir -p Generated
 cd Generated
 
-$IFGEN Foundation -f -b ../binding-script.txt -a ../AdditionalCode/ $OPTS
+generate Foundation -f -b ../binding-script.txt -a ../AdditionalCode/
 build Foundation
-$IFGEN QuartzCore -f -b ../binding-script.txt -a ../AdditionalCode/ -d Foundation $OPTS
+
+generate QuartzCore -f -b ../binding-script.txt -a ../AdditionalCode/ -d Foundation
 build QuartzCore
-$IFGEN AppKit -f -b ../binding-script.txt -a ../AdditionalCode/ -d Foundation -d QuartzCore $OPTS
+
+generate AppKit -f -b ../binding-script.txt -a ../AdditionalCode/ -d Foundation -d QuartzCore
 build AppKit
-$IFGEN CoreData -f -b ../binding-script.txt -a ../AdditionalCode/ -d Foundation \
-    -d AppKit -d QuartzCore $OPTS    # fake dependencies
+
+generate CoreData -f -b ../binding-script.txt -a ../AdditionalCode/ -d Foundation -d AppKit -d QuartzCore
 build CoreData
-$IFGEN Cocoa -u -d Foundation -d QuartzCore -d AppKit -d CoreData $OPTS
+
+generate Cocoa -u -d Foundation -d QuartzCore -d AppKit -d CoreData
 build Cocoa
+
+echo Wahoo.
