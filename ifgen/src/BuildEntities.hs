@@ -222,6 +222,7 @@ makeEntities bindingScript headers importedEntities
                     }               
               ) >> return ()
         makeEntity modName (pos, Typedef (CTStruct n2 fields) name)
+            | notHidden name
             = do
                 newEntity $ Entity {
                         eName = CName $ BS.pack name,

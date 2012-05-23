@@ -226,7 +226,8 @@ declarator emptyDeclaratorPossible thing = do
 function_call_declarator
     = do
         (args, vararg) <- parens objc arguments
-        return (\retval -> CTFunction retval args vararg)
+        let args' = if args == [CTSimple "void"] then [] else args
+        return (\retval -> CTFunction retval args' vararg)
     where                
         arguments =
             do

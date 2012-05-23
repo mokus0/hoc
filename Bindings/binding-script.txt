@@ -26,6 +26,8 @@ rename beginSheetModalForWindow:modalDelegate:didEndSelector:contextInfo: beginM
 rename drawKnob: drawKnob_;
 rename titleWidth: titleWidth_;
 
+hideStructs NSFastEnumerationState;
+
     -- resolve type conflicts between NSUserDefaults & NSDictionary
     -- NSUserDefaults use NSString keys
 class NSUserDefaults {

@@ -111,7 +111,7 @@ cTypeToHaskell env retval tyvar _ = Nothing
 
 simpleTypeToHaskell "void" = return "()"
 simpleTypeToHaskell "BOOL" = return "Bool"
-simpleTypeToHaskell "SEL" = return "SEL"
+simpleTypeToHaskell "SEL" = return "(SEL ())"
 simpleTypeToHaskell _ = Nothing
 
 builtinTypeToHaskell (CTBuiltin Nothing Nothing "float") = return "Float"

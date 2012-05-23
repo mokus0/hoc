@@ -1,5 +1,5 @@
 module BindingScript(
-        BindingScript(bsHiddenFromPrelude, bsHiddenEnums, bsAdditionalTypes),
+        BindingScript(bsHiddenFromPrelude, bsHiddenEnums, bsHiddenStructs, bsAdditionalTypes),
         getSelectorOptions,
         SelectorOptions(..),
         readBindingScript,
@@ -30,6 +30,7 @@ import Messages
 data BindingScript = BindingScript {
         bsHiddenFromPrelude :: Set String,
         bsHiddenEnums :: Set String,
+        bsHiddenStructs :: Set String,
         bsTopLevelOptions :: SelectorOptions,
         bsAdditionalTypes :: [(String, String)],
         bsClassSpecificOptions :: Map.Map String SelectorOptions
@@ -47,6 +48,7 @@ emptyBindingScript
     = BindingScript {
         bsHiddenFromPrelude = Set.empty,
         bsHiddenEnums = Set.empty,
+        bsHiddenStructs = Set.empty,
         bsTopLevelOptions = SelectorOptions {
                 soNameMappings = defaultNameMappings,
                 soCovariantSelectors = Set.empty,
@@ -120,6 +122,7 @@ data Statement = HidePrelude String
                | ReplaceSelector Selector
                | Type String String
                | HideEnum String
+               | HideStruct String
 
 extractSelectorOptions statements =
     SelectorOptions {
@@ -146,7 +149,9 @@ hide = do
     fmap (map Hide) $ many1 (selector tokenParser)
 
 hideEnums = fmap (map HideEnum) $ idList "hideEnums"
-    
+
+hideStructs = fmap (map HideStruct) $ idList "hideStructs"
+
 replaceSelector = do
     thing <- try Parser.selector
     let sel = case thing of
@@ -161,7 +166,7 @@ typ = do
     return [Type typ mod]
 
 statement = classSpecificOptions <|> replaceSelector <|> do
-    result <- hidePrelude  <|> hideEnums <|> rename <|> covariant <|> hide <|> typ
+    result <- hidePrelude  <|> hideEnums <|> hideStructs <|> rename <|> covariant <|> hide <|> typ
     semi tokenParser
     return result
 
@@ -173,6 +178,7 @@ classSpecificOptions = do
     let wrongThings = [ () | HidePrelude _ <- statements ]
                    ++ [ () | ClassSpecific _ _ <- statements ]
                    ++ [ () | HideEnum _ <- statements ]
+                   ++ [ () | HideStruct _ <- statements ]
     
     when (not $ null wrongThings) $ fail "illegal thing in class block"
     
@@ -188,6 +194,7 @@ bindingScript = do
     return $ BindingScript {
             bsHiddenFromPrelude = Set.fromList [ ident | HidePrelude ident <- statements ],
             bsHiddenEnums = Set.fromList [ ident | HideEnum ident <- statements ],
+            bsHiddenStructs = Set.fromList [ ident | HideStruct ident <- statements ],
             bsTopLevelOptions = extractSelectorOptions statements,
             bsAdditionalTypes = [ (typ, mod) | Type typ mod <- statements ],
             bsClassSpecificOptions = Map.fromList [ (cls, opt)
@@ -202,5 +209,10 @@ readBindingScript fn = do
         Left err -> error (show err)
         Right result -> return result
 
-bsHidden = soHiddenSelectors . bsTopLevelOptions
+bsHidden bs = Set.unions
+    [ soHiddenSelectors (bsTopLevelOptions bs)
+    , bsHiddenEnums bs
+    , bsHiddenStructs bs
+    ]
+
 bsNameMappings = soNameMappings . bsTopLevelOptions

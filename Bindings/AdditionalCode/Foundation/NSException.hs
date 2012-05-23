@@ -7,4 +7,4 @@ import Control.Exception as E ( catch )
 -- TODO: find out whether the exception needs to be released
 catchNS :: IO a -> (NSException () -> IO a) -> IO a
 catchNS action handler
-    = action `E.catch` \(ObjCException exc) -> importArgument exc >>= handler
+    = action `E.catch` \(ObjCException exc) -> importArgument exc Prelude.>>= handler

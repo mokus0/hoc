@@ -2,7 +2,6 @@
 
 ARGS=( "$@" )
 OPTS=( )
-SUDO=
 
 IFGEN=hoc-ifgen
 
@@ -17,7 +16,7 @@ function build()
     cd HOC-$1
     cabal configure "${ARGS[@]}"
     cabal build
-    "$SUDO" cabal install
+    cabal install
   )
 }
 

@@ -66,8 +66,7 @@ pprSrcImportClass e
                             <+> textBS (eHaskellName e) <> text "MetaClass")
 
 pprHsBoot entityPile modName entities
-    = text "{-# OPTIONS -fglasgow-exts #-}" $+$
-      text "module" <+> textBS modName <+> text "where" $+$
+    = text "module" <+> textBS modName <+> text "where" $+$
       text "import HOC" $+$
       vcat imports $+$
       vcat classes
@@ -100,8 +99,7 @@ pprHsBoot entityPile modName entities
 -- *****************************************************************************
 
 pprHsModule entityPile modGraph modName idsAndEntities
-    = text "{-# OPTIONS -fth -fglasgow-exts #-}" $+$
-      text "module" <+> textBS modName
+    = text "module" <+> textBS modName
         <> parens (exportList) <+> text "where" $+$
       text "import HOC" $+$
       text "import qualified Prelude" $+$
@@ -287,16 +285,26 @@ pprMasterModule umbrella entityPile frameworkName
                 srcMod = case eModule e of
                     LocalModule mn -> mn
                     FrameworkModule fw mn -> mn
-   
-   
+
+languageExtensions =
+    [ "FlexibleInstances"
+    , "MultiParamTypeClasses"
+    , "RankNTypes"
+    , "TemplateHaskell"
+    , "TypeFamilies"
+    , "TypeSynonymInstances"
+    ]
+
 pprCabalFile frameworkName dependencies entities
     = text "name:" <+> text "HOC-" <> text frameworkName $+$
+      text "cabal-version: >= 1.2" $+$
       text "version: 1.0" $+$
       text "build-type: Simple" $+$
       text "Library" $+$ nest 4 (              
           text "build-depends:" <+>
               hsep (punctuate comma $ map text $
-                    ["base >= 4", "HOC", "objc-ffi"] ++ map ("HOC-" ++) dependencies) $+$
+                    ["base >= 4 && < 5", "HOC", "objc-ffi"] ++ map ("HOC-" ++) dependencies) $+$
+          text "extensions:" <+> sep (punctuate comma $ map text languageExtensions) $+$
           text "exposed-modules:" <+> sep (punctuate comma $
                                             map textBS $ BS.pack frameworkName : modules) $+$
           text "frameworks:" <+> text frameworkName
