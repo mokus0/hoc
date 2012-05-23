@@ -58,6 +58,7 @@ data EnumValue = NextValue | GivenValue Integer | TooComplicatedValue String
 data CType = CTIDType [String {- protocols -}]
            | CTSimple String
            | CTPointer CType
+           | CTBlock CType
            | CTFunction CType [CType] Bool
            | CTUnknown
            | CTEnum String [(String, EnumValue)]

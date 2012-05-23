@@ -296,7 +296,7 @@ pprCabalFile frameworkName dependencies entities
       text "Library" $+$ nest 4 (              
           text "build-depends:" <+>
               hsep (punctuate comma $ map text $
-                    ["base >= 4", "HOC"] ++ map ("HOC-" ++) dependencies) $+$
+                    ["base >= 4", "HOC", "objc-ffi"] ++ map ("HOC-" ++) dependencies) $+$
           text "exposed-modules:" <+> sep (punctuate comma $
                                             map textBS $ BS.pack frameworkName : modules) $+$
           text "frameworks:" <+> text frameworkName

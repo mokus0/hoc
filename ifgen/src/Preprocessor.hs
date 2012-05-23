@@ -9,6 +9,8 @@ import Control.Monad.State as StateM
 
 import qualified Data.Map as Map
 
+import Foreign.C.Types
+
 cppDef = emptyDef
     { commentStart   = "/*"
     , commentEnd     = "*/"
@@ -24,8 +26,8 @@ cppDef = emptyDef
 cpp :: TokenParser ()
 cpp = makeTokenParser cppDef
 
-
-type Expr = StateM.State (Map.Map String Integer) Integer
+type Env = Map.Map String Integer
+type Expr = StateM.State Env Integer
 data PPLine = Text String | If Expr | Else | Endif | Elif Expr
     
 instance Show PPLine where
@@ -99,14 +101,18 @@ plainLine = do
 data PPState = PPSIf Bool | PPSElse
     deriving( Show)
 
+-- initial environment
+macros :: Env
 macros = Map.fromList
-    [("MAC_OS_X_VERSION_MAX_ALLOWED", 1050),
+    [("MAC_OS_X_VERSION_MAX_ALLOWED", 1070),
      ("MAC_OS_X_VERSION_10_0", 1000),
      ("MAC_OS_X_VERSION_10_1", 1010),
      ("MAC_OS_X_VERSION_10_2", 1020),
      ("MAC_OS_X_VERSION_10_3", 1030),
      ("MAC_OS_X_VERSION_10_4", 1040),
      ("MAC_OS_X_VERSION_10_5", 1050),
+     ("MAC_OS_X_VERSION_10_6", 1060),
+     ("MAC_OS_X_VERSION_10_7", 1070),
      ("__OBJC__", 1)
     ]
 
@@ -155,6 +161,7 @@ parseDirectives = map (\l -> case parse line "" l of
                                 Left e -> Text $ l ++ "// " ++ show (show e)
                                 Right x -> x) . handleBackslashes . lines . unblockComments        
 
+-- handles logical lines that are broken across multiple physical lines
 handleBackslashes = f . map reverse where
     f :: [String] -> [String]
     f [] = []

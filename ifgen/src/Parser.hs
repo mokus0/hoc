@@ -124,8 +124,8 @@ const_int_expr = expr
         suffixedInteger =
             do
                 val <- integer objc
-                optional (reserved objc "U" <|> reserved objc "L"
-                            <|> reserved objc "UL") -- ### TODO: no space allowed before 'U'
+                optional (reserved objc "U" <|> reserved objc "L" <|> reserved objc "LL"
+                            <|> reserved objc "UL" <|> reserved objc "ULL") -- ### TODO: no space allowed before 'U'
                 return val
 
         multiCharConstant =
@@ -179,6 +179,10 @@ ignored_type_qualifier =
     <|> reserved objc "byref"
     <|> reserved objc "oneway"
     <|> reserved objc "__strong"
+    <|> reserved objc "CF_RETURNS_RETAINED"
+    <|> reserved objc "NS_RETURNS_RETAINED"
+    <|> reserved objc "CF_CONSUMED"
+    <|> reserved objc "__unsafe_unretained"
 
 -- An id_declarator is an identifier surrounded by things like "*", "[]" and
 -- function arguments.
@@ -204,11 +208,15 @@ declarator emptyDeclaratorPossible thing = do
         terminal = 
                mbTry (parens objc (declarator emptyDeclaratorPossible thing))
                <|> (thing >>= \name -> return (name, id))
+        
+        pointer_op
+            =   (symbol objc "*" >> return CTPointer)
+            <|> (symbol objc "^" >> return CTBlock)
         prefix_operator =
             do
-                symbol objc "*"
+                t <- pointer_op
                 many ignored_type_qualifier
-                return CTPointer
+                return t
 
         postfix_operator =
             brackets objc (optional (integer objc) >> return CTPointer)
@@ -396,16 +404,35 @@ storage_class = extern_keyword <|> inline_keyword <|> reserved objc "static"
 -- which all expand to some __attribute__. My favourite example is
 -- "AVAILABLE_MAC_OS_X_VERSION_10_1_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_3"
 
+-- TODO: rename this to something indicating "__attribute__ we don't care about"
 availability :: Parser ()
-availability = fmap (const ()) $ many $
-    do reserved objc "__attribute__"
-       parens objc (skipParens)
-       return ()
-    <|>
-    do x <- identifier objc
-       guard $ all (\c -> isUpper c || isDigit c || c == '_') x
-       -- guard (any (`isPrefixOf` x) ["AVAILABLE_MAC_", "DEPRECATED_IN_"])
+availability = fmap (const ()) $ many
+    (   attribute
+    <|> ignoredMacro
+    <|> uppercase_ident
+    )
 
+attribute   = reserved objc "__attribute__" >> parens objc skipParens
+
+ignoredMacro = do
+    x <- definedKeyword (`elem` ignoredMacros)
+    skipParens
+
+-- TODO: these need to be expanded, not ignored...
+ignoredMacros = 
+    [ "NS_AVAILABLE"
+    , "NS_AVAILABLE_IOS"
+    , "NS_AVAILABLE_MAC"
+    , "NS_DEPRECATED"
+    , "NS_DEPRECATED_IOS"
+    , "NS_DEPRECATED_MAC"
+    , "NS_FORMAT_FUNCTION"
+    ]
+
+uppercase_ident = do
+    x <- identifier objc
+    guard $ all (\c -> isUpper c || isDigit c || c == '_') x
+    -- guard (any (`isPrefixOf` x) ["AVAILABLE_MAC_", "DEPRECATED_IN_"])
 
 -- Objective C
 
@@ -421,7 +448,14 @@ protocol_decl = do
     semi objc
     return [ForwardProtocol protos]
 
+interface_clutter
+    =   (reserved objc "NS_CLASS_AVAILABLE" >> skipParens)
+    <|> reserved objc "NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE"
+    <|> reserved objc "NS_AUTOMATED_REFCOUNT_UNAVAILABLE"
+
 interface_decl = do
+        many interface_clutter
+        
         proto <- (reserved objc "@interface" >> return False)
                 <|> (reserved objc "@protocol" >> return True)
         class_name <- identifier objc
